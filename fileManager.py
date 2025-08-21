@@ -6,8 +6,7 @@ class FileManager:
 
     def __init__(self):
         if not os.path.exists(self.PASTA_FRAMES):
-            os.makedirs(self.PASTA_FRAMES)
-            print(f"Pasta '{self.PASTA_FRAMES}' criada com sucesso.")
+           self.criar_pasta_frames()
 
     def criar_pasta_frames(self):
         if not os.path.exists(self.PASTA_FRAMES):
@@ -33,7 +32,7 @@ class FileManager:
     def verificar_diretorio(self,caminho):
         if not os.path.exists(caminho):
             #mudar tratativa do erro para retornar False
-            raise FileNotFoundError(f"O caminho '{caminho}' não existe.")
+           self.criar_pasta_frames()
         return True
     
     def limpar_cache(self,caminho):

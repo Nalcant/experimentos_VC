@@ -60,7 +60,7 @@ class Window():
             if not resultado:
                 messagebox.showerror("VideoProcessing.extrair_Frames return false", "Não foi possível processar o vídeo.")
         else:
-            messagebox.showerror("fileMng.verificar_diretorio return false", "Selecione um vídeo válido antes de processar.")
+            messagebox.showerror("fileMng.verificar_diretorio return false", "Não foi possível acessar ou criar a pasta de frames.")
     
     def call_limpar_cache(self):
         if self.fileMng.limpar_cache(self.fileMng.PASTA_FRAMES):
@@ -77,4 +77,4 @@ class Window():
             else:
                 messagebox.showerror("Erro ao aplicar filtro", mensagem)
         else:
-            messagebox.showerror("Diretório inválido", "Não existe pasta de frames.")()
+            messagebox.showerror("fileMng.verificar_diretorio return false", "Não foi possível acessar ou criar a pasta de frames.")()

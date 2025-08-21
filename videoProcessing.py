@@ -10,7 +10,7 @@ class videoProcessing():
             framePointer = cv2.VideoCapture(caminho_video)
             if not framePointer.isOpened():
                 #messagebox.showerror("Erro", "Não foi possível abrir o vídeo.")
-                return False
+                return [False, 0]
 
             frame_count = 0
             while True:
