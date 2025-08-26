@@ -8,24 +8,37 @@ class imageProcessing:
         pass
 
     def aplicar_filtro_pb(self, diretorio):
+        #acessa os arquivos da pasta de frames
         imagens = [f for f in os.listdir(diretorio) if f.endswith(".jpg")]
+        print(len(imagens))
         if not imagens:
            #enviar mensagem de falta de imagens
             return False, "Não há imagens para aplicar o filtro."
+        #aplica o filtro preto e branco em cada imagem encontrada no diretório
         for img_nome in imagens:
-            caminho_img = os.path.join(diretorio, img_nome)
-            imagem = cv2.imread(caminho_img)
-            pb = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY)
+            caminho_img = os.path.join(diretorio, img_nome) #caminho completo da imagem
+            imagem = cv2.imread(caminho_img) #lê a imagem
+            pb = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY) #converte para preto e branco
+             #salva a imagem convertida, sobrescrevendo a original
             cv2.imwrite(caminho_img, pb)
-            return True, "Filtro preto e branco aplicado com sucesso."
+
+        self.median_frame(diretorio)
+        return True, "Filtro preto e branco aplicado com sucesso."
+    
   
-    def linear_medio(self, diretorio):
+    def median_frame(self, diretorio):
+        #acessa os arquivos da pasta de frames 
         imagens = [f for f in os.listdir(diretorio) if f.endswith(".jpg")]
         if not imagens:
-            return False, "Não há imagens para aplicar o filtro."
+            return False, "não há imagens para calcular o frame médio"
         frames = []
-        for img_nome in imagens:
-           frames.append(cv2.imread(os.path.join(diretorio, img_nome)))
-        frameMedio = np.median(frames, axis=0).astype(np.uint8)
-
-        return True, "Filtro linear médio aplicado com sucesso."
+        indice = 0
+        #atribui a cada 30 frames um frame para o cálculo do frame médio
+        for  img_nome in imagens:
+            if indice >= len(imagens):
+                break
+            caminho_img = os.path.join(diretorio, imagens[indice])
+            print("Caminho da imagem no indice {} : {}".format(indice, caminho_img))
+            frames.append(cv2.imread(caminho_img))
+            indice += 30
+        print("Total de frames:"+str(len(frames)))

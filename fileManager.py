@@ -3,17 +3,17 @@ import shutil
 
 class FileManager:
     PASTA_FRAMES = "frames_extraidos"
+    FRAME_MEDIANO = "frame_mediano"
 
     def __init__(self):
-        if not os.path.exists(self.PASTA_FRAMES):
-           self.criar_pasta_frames()
+           self.criar_pasta(self.PASTA_FRAMES)
 
-    def criar_pasta_frames(self):
-        if not os.path.exists(self.PASTA_FRAMES):
-            os.makedirs(self.PASTA_FRAMES)
-            print(f"Pasta '{self.PASTA_FRAMES}' criada com sucesso.")
-        else:
-            print(f"A pasta '{self.PASTA_FRAMES}' já existe.")
+    def criar_pasta(self, diretorio):
+        if not os.path.exists(diretorio):
+            os.makedirs(diretorio)
+            print(f"Pasta '{diretorio}' criada com sucesso.")
+        #else:
+            #print(f"A pasta '{diretorio}' já existe.")
             
     def contar_frames(self, caminho):
         if os.path.exists(caminho):

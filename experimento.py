@@ -22,8 +22,9 @@ def limpar_cache():
 
 def selecionar_video():
     caminho = filedialog.askopenfilename(
-        title="Selecione um vídeo MP4",
-        filetypes=[("Arquivos MP4", "*.mp4")]
+        title="Selecione um arquivo de vídeo",
+        #.mp4.avi.mov.webm.ogg.mpeg.flv.wmv
+        filetypes=[("MP4", "*.mp4"), ("MOV", "*.mov", ), ("AVI", "*.avi"), ("WEBM", "*.webm"), ("OGG", "*.ogg"), ("MPEG", "*.mpeg"), ("FLV", "*.flv"), ("WMV", "*.wmv")]
     )
     if caminho:
         video_path.set(caminho)

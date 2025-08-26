@@ -44,9 +44,10 @@ class Window():
 
     def selecionar_video(self):
         caminho = filedialog.askopenfilename(
-            title="Selecione um vídeo MP4",
-            filetypes=[("Arquivos MP4", "*.mp4")]
-        )
+        title="Selecione um arquivo de vídeo",
+        #.mp4.avi.mov.webm.ogg.mpeg.flv.wmv
+        filetypes=[("Vídeo", ["*.mp4" , "*.mov", "*.avi", "*.webm", "*.ogg", "*.mpeg", "*.flv", "*.wmv", "*.MOV", "*.MP4", "*.AVI", "*.WEBM", "*.OGG", "*.MPEG", "*.FLV", "*.WMV"])]
+    )
         if caminho:
             self.video_path.set(caminho)
             self.label_video_path.config(text=f"Selecionado: {caminho}")       
