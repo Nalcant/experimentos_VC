@@ -18,9 +18,10 @@ class imageProcessing:
         for img_nome in imagens:
             caminho_img = os.path.join(diretorio, img_nome) #caminho completo da imagem
             imagem = cv2.imread(caminho_img) #lê a imagem
-            pb = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY) #converte para preto e branco
+            pbImg = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY) #converte para preto e branco
+            biFilterImg = cv2.bilateralFilter(pbImg,9,75,75) #imagem, diametro, intensidade, distancia
              #salva a imagem convertida, sobrescrevendo a original
-            cv2.imwrite(caminho_img, pb)
+            cv2.imwrite(caminho_img, biFilterImg)
 
         self.median_frame(diretorio)
         return True, "Filtro preto e branco aplicado com sucesso."
@@ -33,12 +34,12 @@ class imageProcessing:
             return False, "não há imagens para calcular o frame médio"
         frames = []
         indice = 0
-        #atribui a cada 30 frames um frame para o cálculo do frame médio
+        #atribui a cada indice frames um frame para o cálculo do frame mediano
         for  img_nome in imagens:
             if indice >= len(imagens):
                 break
             caminho_img = os.path.join(diretorio, imagens[indice])
             print("Caminho da imagem no indice {} : {}".format(indice, caminho_img))
             frames.append(cv2.imread(caminho_img))
-            indice += 30
+            indice += 100 # distancia de frames pode resultar em resultados diferentes
         print("Total de frames:"+str(len(frames)))

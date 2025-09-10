@@ -1,6 +1,4 @@
-/frames_extraidos/
-/mascaras/
+/frames_extraidos*
+/mascaras*
 /frame_mediano/
-__pycache__/fileManager.cpython-312.pyc
-__pycache__/imageProcessing.cpython-312.pyc
-__pycache__/window.cpython-312.pyc
+/*.pyc
