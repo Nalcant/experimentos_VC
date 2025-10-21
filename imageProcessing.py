@@ -19,11 +19,11 @@ class imageProcessing:
             caminho_img = os.path.join(diretorio, img_nome) #caminho completo da imagem
             imagem = cv2.imread(caminho_img) #lê a imagem
             pbImg = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY) #converte para preto e branco
-            biFilterImg = cv2.bilateralFilter(pbImg,9,75,75) #imagem, diametro, intensidade, distancia
+            biFilterImg = cv2.bilateralFilter(pbImg,9,150,150) #imagem, diametro, intensidade, distancia
              #salva a imagem convertida, sobrescrevendo a original
             cv2.imwrite(caminho_img, biFilterImg)
 
-        self.median_frame(diretorio)
+       # self.median_frame(diretorio)
         return True, "Filtro preto e branco aplicado com sucesso."
     
   

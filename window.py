@@ -7,6 +7,10 @@ from imageProcessing import imageProcessing as ip
 
 
 class Window():
+    #só é possível processar frames se o vídeo for selecionado
+    selecionado = False
+    #só é possível aplicar o filtros ou limpar cache se houver frames extraídos
+    frames_extraidos= False
     
     def __init__(self):
         self.fileMng = fm()
@@ -29,18 +33,21 @@ class Window():
         self.label_video_path.pack(pady=5)
 
         Button(self.root, text="Processar vídeo (Extrair Frames)", command= self.call_extrair_frames, width=30).pack(pady=5)
-
+        
         # Frame horizontal para botão + contador
         self.filtro_frame = Frame(self.root)
+
         self.filtro_frame.pack(pady=5)
 
-        Button(self.filtro_frame, text="Aplicar filtro preto e branco", command=self.call_aplicar_filtro_pb, width=30).pack(side="left")
-        Label(self.filtro_frame, textvariable=contador_var, fg="blue", font=("Arial", 10, "bold"), padx=10).pack(side="left")
+        Button(self.filtro_frame, text="Aplicar filtro preto e branco", command=self.call_aplicar_filtro_pb, width=30).pack(pady=5)
+        Label(self.filtro_frame, textvariable=contador_var, fg="blue", font=("Arial", 10, "bold"), padx=10).pack(pady=5)
         Button(self.root, text="Limpar cache de frames", command=self.call_limpar_cache, width=30).pack(pady=5)
         self.root.mainloop()
 
     def atualizar_contador_frames(self,contagem):
         self.contador_var.set(f"Frames extraídos: {contagem}")
+        if(contagem>0):
+            self.frames_extraidos = True
 
     def selecionar_video(self):
         caminho = filedialog.askopenfilename(
@@ -53,6 +60,9 @@ class Window():
             self.label_video_path.config(text=f"Selecionado: {caminho}")       
     
     def call_extrair_frames(self):
+        if(self.selecionado == False):
+            messagebox.showerror("Erro", "Nenhum vídeo selecionado. Selecione um vídeo primeiro.")
+            return
         if self.fileMng.verificar_diretorio(self.video_path.get()):
             resultado, frame_count = self.videoProcessing.extrair_frames(self.fileMng.PASTA_FRAMES, self.video_path.get())
             if resultado:
@@ -71,6 +81,9 @@ class Window():
             messagebox.showinfo("Cache limpo", "Nenhuma pasta de frames foi encontrada.")
    
     def call_aplicar_filtro_pb(self):
+        if(not self.frames_extraidos):
+            messagebox.showerror("Erro", "Nenhum frame extraído. Extraia frames primeiro.")
+            return
         if self.fileMng.verificar_diretorio(self.fileMng.PASTA_FRAMES):
             resultado, mensagem = self.imageProcessing.aplicar_filtro_pb(self.fileMng.PASTA_FRAMES)
             if resultado:
