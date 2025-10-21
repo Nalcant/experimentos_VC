@@ -1,24 +1,34 @@
 import cv2 as cv2
 import os
 import numpy as np
-
+import fileManager as fm
 class imageProcessing:
-
+    frameDir = fm.FileManager.PASTA_FRAMES
+    
     def __init__(self):
         pass
 
-    def aplicar_filtro_pb(self, diretorio):
+
+    '''
+     This method applies a grayscale filter to all images in the specified directory
+     afterter converting to grayscale, it applies a bilateral filter to reduce noise while keeping edges sharp
+
+     '''
+    def aplicar_filtros(self, diretorio):
         #acessa os arquivos da pasta de frames
         imagens = [f for f in os.listdir(diretorio) if f.endswith(".jpg")]
         print(len(imagens))
         if not imagens:
            #enviar mensagem de falta de imagens
             return False, "Não há imagens para aplicar o filtro."
-        #aplica o filtro preto e branco em cada imagem encontrada no diretório
+        #aplica o filtro grayscale em cada imagem encontrada no diretório
         for img_nome in imagens:
             caminho_img = os.path.join(diretorio, img_nome) #caminho completo da imagem
             imagem = cv2.imread(caminho_img) #lê a imagem
-            pbImg = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY) #converte para preto e branco
+            if(imagem is None):
+                print(f"Erro ao ler a imagem: {caminho_img}")
+                continue
+            pbImg = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY) #converte para grayscale
             biFilterImg = cv2.bilateralFilter(pbImg,9,150,150) #imagem, diametro, intensidade, distancia
              #salva a imagem convertida, sobrescrevendo a original
             cv2.imwrite(caminho_img, biFilterImg)
@@ -26,7 +36,13 @@ class imageProcessing:
        # self.median_frame(diretorio)
         return True, "Filtro preto e branco aplicado com sucesso."
     
-  
+    '''
+    this method calculates the median frame from all frames in the specified directory
+    and saves it in the FRAME_MEDIANO directory
+    it must be called after extracting frames
+    and before calculating the masks for segmentation using median masking
+    '''
+
     def median_frame(self, diretorio):
         #acessa os arquivos da pasta de frames 
         imagens = [f for f in os.listdir(diretorio) if f.endswith(".jpg")]
@@ -43,3 +59,157 @@ class imageProcessing:
             frames.append(cv2.imread(caminho_img))
             indice += 100 # distancia de frames pode resultar em resultados diferentes
         print("Total de frames:"+str(len(frames)))
+
+    
+    '''
+    this method calculates the median mask for each frame in the specified directory
+    using the median frame stored in diretorioFrameMediano
+    '''
+    def median_mask(diretorioFrames, diretorioFrameMediano):
+        imagens = [f for f in os.listdir(diretorioFrames) if f.endswith(".jpg")]
+        fm.FileManager.criar_pasta(None, "mascaras")
+        if not imagens:
+            return False, "não há imagens para calcular a máscara"
+        for img in imagens:
+            caminho_img = os.path.join(diretorioFrames, img)
+            frame = cv2.imread(caminho_img)
+            frame_medio = cv2.imread(diretorioFrameMediano)
+            diferenca = cv2.absdiff(frame, frame_medio)
+            #th, mascara = cv2.threshold(cv2.cvtColor(diferenca, cv2.COLOR_BGR2GRAY), 30, 255, cv2.THRESH_BINARY)
+            mascaraGauss = cv2.adaptiveThreshold(cv2.cvtColor(diferenca, cv2.COLOR_BGR2GRAY),255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
+            cv2.THRESH_BINARY,51,10)
+            caminho_mascara = os.path.join("mascaras", f"mascara_{img}")
+            cv2.imwrite(caminho_mascara, mascaraGauss)
+        return True, "máscaras calculadas com sucesso"
+
+#median_mask(fm.FileManager.PASTA_FRAMES, os.path.join(fm.FileManager.FRAME_MEDIANO, "frame_medio.jpg"))
+    
+
+
+    '''
+    this method iterates through all frames in the specified directory
+    and computes the frame difference between consecutive frames.
+    It saves the resulting difference images in a new directory called "FrameDiff".
+    '''
+    def diff_iterator(self):
+        framePaths = [f for f in os.listdir(self.frameDir) if f.endswith(".jpg")] #lista de frames na pasta
+        fm.FileManager.criar_pasta(None, "FrameDiff")
+        previousFrame = []
+        currentFrame = []
+        nextFrame = []
+        if(not framePaths):
+            return False, "não há imagens para realizar o frame diff"
+        for i, currentPath in enumerate(framePaths):
+        #ler imagem do frame atual
+            print("Processando frame: {}".format(currentPath))
+            print("Caminho completo: {}".format(os.path.join(self.frameDir, currentPath)))
+            fullPath = os.path.join(self.frameDir, currentPath)
+            currentFrame = cv2.imread(fullPath)
+        # se não houver frame anterior, atribuir frameAtual ao anterior e seguir para a próxima iteração
+            if  len(previousFrame) == 0:
+                previousFrame = currentFrame
+            else:
+            # se houver posterior, ler posterior
+                print(type(currentFrame))
+                print(type(self.frameDir))
+                if i+30 < len(framePaths):
+                    fullPath = os.path.join(self.frameDir, framePaths[i+30])
+                    nextFrame = cv2.imread(fullPath)
+            #O ERRO PODE ESTAR AQUI
+                else:
+                    print("fim do frameDiff no frame: {}".format(fullPath))
+                print(len(previousFrame))
+                print(len(currentFrame))
+                print(len(nextFrame))
+                diffMask = self.frame_diff(previousFrame, currentFrame, nextFrame)
+                threshold_value, diffMask = cv2.threshold(cv2.cvtColor(diffMask, cv2.COLOR_BGR2GRAY), 30, 255, cv2.THRESH_BINARY)
+                caminho = os.path.join("FrameDiff", f"diff_{currentPath}")
+                cv2.imwrite(caminho, diffMask)
+                previousFrame = currentFrame
+
+    '''
+     This method calculates the difference between three frames: previous, current, and 
+     next. It computes the absolute difference between the current frame and both the previous
+     and next frames, then combines these differences using a bitwise AND operation to highlight
+     '''
+    
+    #diferenciar com o próximo e o anterior, gerar um frame basedo operação AND entre as duas diferenças
+    def frame_diff(prev_frame, cur_frame, next_frame):
+        diff_frames_1 = cv2.absdiff(next_frame, cur_frame)
+        diff_frames_2 = cv2.absdiff(cur_frame, prev_frame)
+        return cv2.bitwise_and(diff_frames_1, diff_frames_2) 
+    
+    '''
+    what comes below is experimental code for other image processing techniques
+    using single file methods (one frame)
+    they can be adapted to iterate through folders later
+    '''
+    
+    '''
+    logical operations between images
+    AND, OR, NOT, XOR'''
+
+    '''
+    In my test subjects, logical operation have not achieved 
+    significant results, because the first method (median masking) have produced 
+    to wide masks, in constrast with the  thin lines produced by the second method (frame difference).
+    the results must be something close to images that nullify one of the entry methods
+    or something that barely shows the differences between them.
+
+    img1_path: path to first image (From a method, e.g., median masking
+    img2_path: path to second image (From another method, e.g., frame difference
+    returns: boolean success flag, message)
+    saves the resulting images in the current directory
+    '''
+
+    def logical_operations(img1_path, img2_path):
+        img1 = cv2.imread(img1_path)
+        img2 = cv2.imread(img2_path)
+        and_img = cv2.bitwise_and(img1, img2)
+        or_img = cv2.bitwise_or(img1, img2)
+        not_img1 = cv2.bitwise_not(img1)
+        not_img2 = cv2.bitwise_not(img2)
+        xor_img = cv2.bitwise_xor(img1, img2)
+        cv2.imwrite("and_image.jpg", and_img)
+        cv2.imwrite("or_image.jpg", or_img)
+        cv2.imwrite("not_image1.jpg", not_img1)
+        cv2.imwrite("not_image2.jpg", not_img2)
+        cv2.imwrite("xor_image.jpg", xor_img)
+        return True, "Operações lógicas aplicadas com sucesso."
+    
+    '''
+    morphological operations: erosion and dilation
+    '''
+
+    '''
+    this one actuallys workds well to refine masks
+    specially dilation
+    the application of erodion first results in nullified masks in frame difference method
+
+    
+    maybe dilation first, then erosion could work better
+
+    img_path: path to the image to be processed
+    operation: "erode" or "dilate"
+    kernel_size: size of the structuring element
+    returns: boolean success flag, message
+    saves the resulting image in the current directory
+    '''
+
+    def morphological_operation(img_path, operation, kernel_size=5):
+    
+        img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+        kernel = np.ones((kernel_size, kernel_size), np.uint8)
+        if operation == "erode":
+            processed_img = cv2.erode(img, kernel, iterations=1)
+        elif operation == "dilate":
+            processed_img = cv2.dilate(img, kernel, iterations=1)
+        else:
+            return False, "Operação inválida. Use 'erode' ou 'dilate'."
+        output_path = f"{operation}_image.jpg"
+        cv2.imwrite(output_path, processed_img)
+        return True, f"Operação morfológica '{operation}' aplicada com sucesso."
+
+    
+
+    

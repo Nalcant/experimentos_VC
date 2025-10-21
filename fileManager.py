@@ -4,6 +4,7 @@ import shutil
 class FileManager:
     PASTA_FRAMES = "frames_extraidos"
     FRAME_MEDIANO = "frame_mediano"
+    PASTA_PRE_PROCESS = "gauss_Gray"
 
     def __init__(self):
            self.criar_pasta(self.PASTA_FRAMES)
@@ -32,7 +33,7 @@ class FileManager:
     def verificar_diretorio(self,caminho):
         if not os.path.exists(caminho):
             #mudar tratativa do erro para retornar False
-           self.criar_pasta_frames()
+           self.criar_pasta_frames(caminho)
         return True
     
     def limpar_cache(self,caminho):
@@ -45,5 +46,15 @@ class FileManager:
             return False
             #messagebox.showinfo("Cache limpo", "Nenhuma pasta de frames foi encontrada.")
         #atualizar_contador_frames()
+    def salvar_pasta(caminho_origem, caminho_destino):
+        try:
+            if not os.path.exists(caminho_destino):
+                shutil.copytree(caminho_origem, caminho_destino)
+                print(f"Pasta copiada de '{caminho_origem}' para '{caminho_destino}' com sucesso.")
+            else:
+                print(f"A pasta de destino '{caminho_destino}' já existe.")
+        except Exception as e:
+            print(f"Erro ao copiar a pasta: {e}")
+         
     
 
