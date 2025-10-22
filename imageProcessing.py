@@ -44,20 +44,22 @@ class imageProcessing:
     '''
 
     def median_frame(self, diretorio):
-        #acessa os arquivos da pasta de frames 
         imagens = [f for f in os.listdir(diretorio) if f.endswith(".jpg")]
         if not imagens:
             return False, "não há imagens para calcular o frame médio"
         frames = []
         indice = 0
-        #atribui a cada indice frames um frame para o cálculo do frame mediano
         for  img_nome in imagens:
             if indice >= len(imagens):
                 break
             caminho_img = os.path.join(diretorio, imagens[indice])
             print("Caminho da imagem no indice {} : {}".format(indice, caminho_img))
             frames.append(cv2.imread(caminho_img))
-            indice += 100 # distancia de frames pode resultar em resultados diferentes
+            indice += 30 #em caso de comparação entre os métodos, esse valor deve ser igual ao usado em diff_iterator
+        median_frame = np.median(frames, axis=0).astype(dtype=np.uint8)
+        fm.FileManager.criar_pasta(None, fm.FileManager.FRAME_MEDIANO)
+        caminho = os.path.join(fm.FileManager.FRAME_MEDIANO, "frame_medio.jpg")
+        cv2.imwrite(caminho, median_frame)
         print("Total de frames:"+str(len(frames)))
 
     
@@ -65,7 +67,7 @@ class imageProcessing:
     this method calculates the median mask for each frame in the specified directory
     using the median frame stored in diretorioFrameMediano
     '''
-    def median_mask(diretorioFrames, diretorioFrameMediano):
+    def median_mask(self, diretorioFrames, diretorioFrameMediano):
         imagens = [f for f in os.listdir(diretorioFrames) if f.endswith(".jpg")]
         fm.FileManager.criar_pasta(None, "mascaras")
         if not imagens:
@@ -75,12 +77,13 @@ class imageProcessing:
             frame = cv2.imread(caminho_img)
             frame_medio = cv2.imread(diretorioFrameMediano)
             diferenca = cv2.absdiff(frame, frame_medio)
-            #th, mascara = cv2.threshold(cv2.cvtColor(diferenca, cv2.COLOR_BGR2GRAY), 30, 255, cv2.THRESH_BINARY)
-            mascaraGauss = cv2.adaptiveThreshold(cv2.cvtColor(diferenca, cv2.COLOR_BGR2GRAY),255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
-            cv2.THRESH_BINARY,51,10)
+            th, mascara = cv2.threshold(cv2.cvtColor(diferenca, cv2.COLOR_BGR2GRAY), 30, 255, cv2.THRESH_BINARY)
+            #mascaraGauss = cv2.adaptiveThreshold(cv2.cvtColor(diferenca, cv2.COLOR_BGR2GRAY),255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,51,10)
             caminho_mascara = os.path.join("mascaras", f"mascara_{img}")
-            cv2.imwrite(caminho_mascara, mascaraGauss)
+            cv2.imwrite(caminho_mascara, mascara)
+            print("Máscara salva em: {}".format(caminho_mascara))
         return True, "máscaras calculadas com sucesso"
+
 
 #median_mask(fm.FileManager.PASTA_FRAMES, os.path.join(fm.FileManager.FRAME_MEDIANO, "frame_medio.jpg"))
     

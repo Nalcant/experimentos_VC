@@ -7,13 +7,25 @@ from imageProcessing import imageProcessing as ip
 
 
 class Window():
+
+    '''
+    Flags to control which operations are available based on previous steps
+    in the processing pipeline
+
+    selecionado = a frame can only be processed if a video is selected
+    frames_extraidos = filters or cache clearing can only be applied if frames have been extracted
+    pre_processado = segmentation can only be done after applying the black and white filter
+    segmentado = post processing can only be done after segmentation
+
+    Remember to manually update these flags back to false when manual testing
+    '''
     #só é possível processar frames se o vídeo for selecionado
-    selecionado = False
+    selecionado = True
     #só é possível aplicar o filtros ou limpar cache se houver frames extraídos
-    frames_extraidos= False
+    frames_extraidos= True
 
     #só é possível segmentar após aplicar o filtro preto e branco
-    pre_processado = False
+    pre_processado = True
     
     # só é possível pós processar após segmentar
     segmentado = False
@@ -148,7 +160,7 @@ class Window():
             messagebox.showerror("Erro", "Frames não pré-processados. Aplique os filtros primeiro.")
             return
         if self.fileMng.verificar_diretorio(self.fileMng.PASTA_FRAMES):
-            resultado, mensagem = self.imageProcessing.mascara_mediana(self.fileMng.PASTA_FRAMES, self.fileMng.FRAME_MEDIANO)
+            resultado, mensagem = self.imageProcessing.median_mask(self.fileMng.PASTA_FRAMES, self.fileMng.FRAME_MEDIANO)
             if resultado:
                 messagebox.showinfo("Máscara aplicada", mensagem)
                 self.segmentado = True
