@@ -58,7 +58,7 @@ class imageProcessing:
             indice += 30 #em caso de comparação entre os métodos, esse valor deve ser igual ao usado em diff_iterator
         median_frame = np.median(frames, axis=0).astype(dtype=np.uint8)
         fm.FileManager.criar_pasta(None, fm.FileManager.FRAME_MEDIANO)
-        caminho = os.path.join(fm.FileManager.FRAME_MEDIANO, "frame_medio.jpg")
+        caminho = os.path.join(fm.FileManager.FRAME_MEDIANO, "frame_mediano.jpg")
         cv2.imwrite(caminho, median_frame)
         print("Total de frames:"+str(len(frames)))
 
@@ -69,14 +69,25 @@ class imageProcessing:
     '''
     def median_mask(self, diretorioFrames, diretorioFrameMediano):
         imagens = [f for f in os.listdir(diretorioFrames) if f.endswith(".jpg")]
-        fm.FileManager.criar_pasta(None, "mascaras")
+        fm.FileManager.criar_pasta(None, "mascaras_frames_mediano")
         if not imagens:
             return False, "não há imagens para calcular a máscara"
         for img in imagens:
             caminho_img = os.path.join(diretorioFrames, img)
             frame = cv2.imread(caminho_img)
-            frame_medio = cv2.imread(diretorioFrameMediano)
-            diferenca = cv2.absdiff(frame, frame_medio)
+            frame_medio = cv2.imread(os.path.join(diretorioFrameMediano, "frame_mediano.jpg"))
+            if(frame is None):
+                print(f"Erro ao ler a imagem: {caminho_img}")
+                return False, "erro ao ler a imagem do frame atual"
+            if(frame_medio is None):
+                print(f"Erro ao ler a imagem do frame médio: {diretorioFrameMediano}")
+                return False, "erro ao ler a imagem do frame médio"
+            if frame.shape != frame_medio.shape:
+                print(f"Erro: Dimensões incompatíveis entre o frame atual e o frame médio para a imagem: {caminho_img}")
+                return False, "dimensões incompatíveis entre o frame atual e o frame médio"
+             #calcula a diferença absoluta entre o frame atual e o frame médio
+            else:
+                diferenca = cv2.absdiff(frame, frame_medio)
             th, mascara = cv2.threshold(cv2.cvtColor(diferenca, cv2.COLOR_BGR2GRAY), 30, 255, cv2.THRESH_BINARY)
             #mascaraGauss = cv2.adaptiveThreshold(cv2.cvtColor(diferenca, cv2.COLOR_BGR2GRAY),255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,51,10)
             caminho_mascara = os.path.join("mascaras", f"mascara_{img}")
@@ -85,7 +96,7 @@ class imageProcessing:
         return True, "máscaras calculadas com sucesso"
 
 
-#median_mask(fm.FileManager.PASTA_FRAMES, os.path.join(fm.FileManager.FRAME_MEDIANO, "frame_medio.jpg"))
+#median_mask(fm.FileManager.PASTA_FRAMES, os.path.join(fm.FileManager.FRAME_MEDIANO, "frame_mediano.jpg"))
     
 
 
@@ -96,7 +107,7 @@ class imageProcessing:
     '''
     def diff_iterator(self):
         framePaths = [f for f in os.listdir(self.frameDir) if f.endswith(".jpg")] #lista de frames na pasta
-        fm.FileManager.criar_pasta(None, "FrameDiff")
+        fm.FileManager.criar_pasta(None, "mascaras_FrameDiff")
         previousFrame = []
         currentFrame = []
         nextFrame = []
@@ -126,7 +137,7 @@ class imageProcessing:
                 print(len(nextFrame))
                 diffMask = self.frame_diff(previousFrame, currentFrame, nextFrame)
                 threshold_value, diffMask = cv2.threshold(cv2.cvtColor(diffMask, cv2.COLOR_BGR2GRAY), 30, 255, cv2.THRESH_BINARY)
-                caminho = os.path.join("FrameDiff", f"diff_{currentPath}")
+                caminho = os.path.join("mascaras_FrameDiff", f"diff_{currentPath}")
                 cv2.imwrite(caminho, diffMask)
                 previousFrame = currentFrame
 

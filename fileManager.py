@@ -5,6 +5,8 @@ class FileManager:
     PASTA_FRAMES = "frames_extraidos"
     FRAME_MEDIANO = "frame_mediano"
     PASTA_PRE_PROCESS = "gauss_Gray"
+    PASTA_DIFF= "mascaras_FrameDiff"
+    ALL = [PASTA_FRAMES, FRAME_MEDIANO, PASTA_PRE_PROCESS, PASTA_DIFF]
 
     def __init__(self):
            self.criar_pasta(self.PASTA_FRAMES)
@@ -36,16 +38,6 @@ class FileManager:
            self.criar_pasta_frames(caminho)
         return True
     
-    def limpar_cache(self,caminho):
-        #chamar verificar_diretorio antes de limpar o cache
-        if os.path.exists(caminho):
-            shutil.rmtree(caminho)
-            #messagebox.showinfo("Cache limpo", "Pasta de frames apagada com sucesso.")
-            return True
-        else:
-            return False
-            #messagebox.showinfo("Cache limpo", "Nenhuma pasta de frames foi encontrada.")
-        #atualizar_contador_frames()
     def salvar_pasta(caminho_origem, caminho_destino):
         try:
             if not os.path.exists(caminho_destino):

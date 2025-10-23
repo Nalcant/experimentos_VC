@@ -60,16 +60,25 @@ class Window():
         self.filtro_frame = Frame(self.root)
 
         self.filtro_frame.pack(pady=5)
-
+        # Area de pré-processamento
+        Label(self.filtro_frame, text="Pré-Processamento", font=("Arial", 12)).pack(pady=10)
         Button(self.filtro_frame, text="Aplicar filtro grayscale + bilateral", command=self.call_aplicar_filtros, width=30).pack(pady=5)
         Label(self.filtro_frame, textvariable=contador_var, fg="blue", font=("Arial", 10, "bold"), padx=10).pack(pady=5)
 
+        # Area de máscaras
+        Label(self.filtro_frame, text="Máscaras", font=("Arial", 12)).pack(pady=10)
         Button(self.filtro_frame, text="Máscara Mediana", command=self.call_aplicar_mascara_mediana, width=30).pack(side="left", pady=5)
-
         Button(self.filtro_frame, text="Máscara Diferença de Frames", command=self.call_mascara_diferenca_frames, width=30).pack(side="left", pady=5)
 
-        Button(self.root, text="Limpar cache de frames", command=self.call_limpar_cache, width=30).pack(pady=5)
+        # Area de pós-processamento
+        Label(self.filtro_frame, text="Pós-Processamento", font=("Arial", 12)).pack(pady=10)
+        Button(self.filtro_frame, text="Dilatação", command=self.call_aplicar_mascara_mediana, width=30).pack(side="left", pady=5)
+        Button(self.filtro_frame, text="Erosão", command=self.call_mascara_diferenca_frames, width=30).pack(side="left", pady=5)
+
+       #Área de arquivos
+        Button(self.root, text="Limpar cache de frames", command=self.call_limpar_cache, width=30).pack(pady=5)       
         self.root.mainloop()
+        
 
     '''
     This method must be called after any file operation that involves add or remove frame files in system folders
@@ -185,3 +194,59 @@ class Window():
                 messagebox.showerror("Erro ao aplicar máscara", mensagem)
         else:
             messagebox.showerror("fileMng.verificar_diretorio return false", "Não foi possível acessar ou criar a pasta de frames.")() 
+            
+        
+    def select_folder_dialog(self , call = 'SALVAR'):
+        opcoes = []
+        if call == 'SALVAR':
+            titulo = 'Salvar Pasta'
+            mensagem = "Qual operação deseja salvar?"
+            opcoes = [fm.PASTA_PRE_PROCESS, fm.PASTA_DIFF, fm.FRAME_MEDIANO, fm.ALL]
+        elif call == 'ABRIR':
+            titulo = 'Abrir Pasta'
+            mensagem = "Qual operação deseja abrir?"
+            opcoes = [fm.PASTA_DIFF, fm.FRAME_MEDIANO]
+        resposta =   messagebox.askquestion(titulo, mensagem, opcoes)
+        return resposta 
+        
+    def call_dilatar_mascara(self):
+        operacao = self.select_folder_dialog(self, 'ABRIR')
+        if not operacao:
+            return
+        if self.fileMng.verificar_diretorio(operacao):
+            resultado, mensagem = self.imageProcessing.dilatar_iterator(operacao)
+            if resultado:
+                messagebox.showinfo("Dilatação aplicada", mensagem)
+            else:
+                messagebox.showerror("Erro ao aplicar dilatação", mensagem)
+        else:
+            messagebox.showerror(f"Operação '{operacao}' ainda não realizada.")
+            
+            if(not self.frames_extraidos):
+                messagebox.showerror("Erro", "Nenhum frame extraído. Extraia frames primeiro.")
+                return
+            if(not self.segmentado):
+                messagebox.showerror("Erro", "Frames não segmentados. Aplique uma máscara primeiro.")
+                return
+            if self.fileMng.verificar_diretorio(self.fileMng.PASTA_FRAMES):
+                resultado, mensagem = self.imageProcessing.dilatar_iterator(self.fileMng.PASTA_FRAMES)
+                if resultado:
+                    messagebox.showinfo("Dilatação aplicada", mensagem)
+                else:
+                    messagebox.showerror("Erro ao aplicar dilatação", mensagem)
+       
+       
+    def call_erosao_mascara(self):
+        if(not self.frames_extraidos):
+            messagebox.showerror("Erro", "Nenhum frame extraído. Extraia frames primeiro.")
+            return
+        if(not self.segmentado):
+            messagebox.showerror("Erro", "Frames não segmentados. Aplique uma máscara primeiro.")
+            return
+        if self.fileMng.verificar_diretorio(self.fileMng.PASTA_FRAMES):
+            #AQUI OH messagebox.show
+            resultado, mensagem = self.imageProcessing.erosao_iterator(self.fileMng.PASTA_FRAMES)
+            if resultado:
+                messagebox.showinfo("Erosão aplicada", mensagem)
+            else:
+                messagebox.showerror("Erro ao aplicar erosão", mensagem)
