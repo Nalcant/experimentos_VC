@@ -5,10 +5,11 @@ from fileManager import FileManager as fm
 from videoProcessing import videoProcessing as vp
 from imageProcessing import imageProcessing as ip
 from tkinter import PhotoImage
+from PIL import Image, ImageTk
 
 
 class Window():
-
+    ThumbNail = None
     '''
     Flags to control which operations are available based on previous steps
     in the processing pipeline
@@ -41,7 +42,7 @@ class Window():
         self.root = tk()
         # Configurações da janela principal
         self.root.title("Processamento de vídeo") 
-        self.root.geometry("1000x700")
+        self.root.geometry("1000x600")
         self.root.update_idletasks()
         self.root.minsize(self.root.winfo_width(), self.root.winfo_height())
         self.video_path = StringVar()
@@ -49,13 +50,30 @@ class Window():
 
         #pre-process frame    
         self.TopFrame = Frame(self.root, width=950, height=300, bg="lightgray")
-        image = PhotoImage(file="videoPlaceholder\placeholder-video.png")
-        image = image.subsample(3,3)
-        self.ThumbLabel = Label(self.TopFrame, image= image, bg="lightgray", font=("Arial", 14))
-        self.ThumbLabel.pack(pady=10, side="left") 
+        self.image = PhotoImage(file="videoPlaceholder\\placeholder-video.png")
+        self.image = self.image.subsample(2,2)
+
+        self.ThumbLabel = Label(self.TopFrame, image= self.image, bg="lightgray")
+        self.ThumbLabel.pack(pady=10, side="left", padx = "10")
+
         self.TopFrame.pack(side="top", pady=10, padx=10)
-        self.root.mainloop()
+        self.TopFrame.pack_propagate(False)
+
+        self.lbTopFrameTitle = Label(self.TopFrame, text="Pré-Processamento", font=("Arial", 16), bg= "lightgray")
+        self.lbTopFrameTitle.pack(side = "top", pady= 10)
+        self.bVideoSelect = Button(self.TopFrame, text="Selecionar vídeo", command=self.selecionar_video, width=30, )
+        self.bVideoSelect.pack(side="top", padx= 10, pady= 10)
         
+        self.label_video_path = Label(self.TopFrame, text="Nenhum vídeo selecionado", wraplength=500)
+        self.label_video_path.pack(pady=5, side="top")
+
+
+
+
+        
+
+        self.root.mainloop()
+     
 
 
     """  
@@ -107,13 +125,19 @@ class Window():
         caminho = filedialog.askopenfilename(
         title="Selecione um arquivo de vídeo",
         #.mp4.avi.mov.webm.ogg.mpeg.flv.wmv
-        filetypes=[("Vídeo", ["*.mp4" , "*.mov", "*.avi", "*.webm", "*.ogg", "*.mpeg", "*.flv", "*.wmv", "*.MOV", "*.MP4", "*.AVI", "*.WEBM", "*.OGG", "*.MPEG", "*.FLV", "*.WMV"])]
-    )
+        filetypes=[("Vídeo", ["*.mp4" , "*.mov", "*.avi",
+                              "*.webm", "*.ogg", "*.mpeg", 
+                              "*.flv", "*.wmv", "*.MOV", 
+                              "*.MP4", "*.AVI", "*.WEBM",
+                                "*.OGG", "*.MPEG", "*.FLV", "*.WMV"])])
         
         if caminho:
             self.video_path.set(caminho)
             self.label_video_path.config(text=f"Selecionado: {caminho}")  
-            self.selecionado = True     
+            self.ThumbNail = PhotoImage(file=self.videoProcessing.get_firstFrame(caminho))
+            self.ThumbLabel.config(image= self.ThumbNail)
+            self.selecionado = True   
+
     
     '''
      This method calls the videoProcessing to extract frames from the selected video
