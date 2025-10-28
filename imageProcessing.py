@@ -12,6 +12,8 @@ class imageProcessing:
     '''
      This method applies a grayscale filter to all images in the specified directory
      afterter converting to grayscale, it applies a bilateral filter to reduce noise while keeping edges sharp
+    
+    returns: boolean success flag, message
 
      '''
     def aplicar_filtros(self, diretorio):
@@ -31,7 +33,7 @@ class imageProcessing:
             pbImg = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY) #converte para grayscale
             biFilterImg = cv2.bilateralFilter(pbImg,9,150,150) #imagem, diametro, intensidade, distancia
              #salva a imagem convertida, sobrescrevendo a original
-            cv2.imwrite(caminho_img, biFilterImg)
+            cv2.imwrite(fm.FileManager.PASTA_PRE_PROCESS, biFilterImg)
 
        # self.median_frame(diretorio)
         return True, "Filtro preto e branco aplicado com sucesso."
@@ -41,6 +43,9 @@ class imageProcessing:
     and saves it in the FRAME_MEDIANO directory
     it must be called after extracting frames
     and before calculating the masks for segmentation using median masking
+    
+    it saves the median frame as "frame_mediano.jpg" in the FRAME_MEDIANO directory
+    returns: boolean success flag, message
     '''
 
     def median_frame(self, diretorio):
@@ -66,6 +71,9 @@ class imageProcessing:
     '''
     this method calculates the median mask for each frame in the specified directory
     using the median frame stored in diretorioFrameMediano
+
+
+    
     '''
     def median_mask(self, diretorioFrames, diretorioFrameMediano):
         imagens = [f for f in os.listdir(diretorioFrames) if f.endswith(".jpg")]
@@ -89,8 +97,7 @@ class imageProcessing:
             else:
                 diferenca = cv2.absdiff(frame, frame_medio)
             th, mascara = cv2.threshold(cv2.cvtColor(diferenca, cv2.COLOR_BGR2GRAY), 30, 255, cv2.THRESH_BINARY)
-            #mascaraGauss = cv2.adaptiveThreshold(cv2.cvtColor(diferenca, cv2.COLOR_BGR2GRAY),255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,51,10)
-            caminho_mascara = os.path.join("mascaras", f"mascara_{img}")
+            caminho_mascara = os.path.join(fm.FileManager.PASTA_MEDIANO, f"mascara_mediana_{img}")
             cv2.imwrite(caminho_mascara, mascara)
             print("Máscara salva em: {}".format(caminho_mascara))
         return True, "máscaras calculadas com sucesso"
@@ -137,7 +144,7 @@ class imageProcessing:
                 print(len(nextFrame))
                 diffMask = self.frame_diff(previousFrame, currentFrame, nextFrame)
                 threshold_value, diffMask = cv2.threshold(cv2.cvtColor(diffMask, cv2.COLOR_BGR2GRAY), 30, 255, cv2.THRESH_BINARY)
-                caminho = os.path.join("mascaras_FrameDiff", f"diff_{currentPath}")
+                caminho = os.path.join(fm.FileManager.PASTA_DIFF, f"diff_{currentPath}")
                 cv2.imwrite(caminho, diffMask)
                 previousFrame = currentFrame
 
@@ -200,29 +207,43 @@ class imageProcessing:
     specially dilation
     the application of erodion first results in nullified masks in frame difference method
 
-    
-    maybe dilation first, then erosion could work better
-
-    img_path: path to the image to be processed
+    folder_path: path to the folder containing images to process
     operation: "erode" or "dilate"
     kernel_size: size of the structuring element
     returns: boolean success flag, message
     saves the resulting image in the current directory
     '''
 
-    def morphological_operation(img_path, operation, kernel_size=5):
+    def iterate_morphological_operation(folder_path, operation, kernel_size=5):
+        imagens = [f for f in os.listdir(folder_path) if f.endswith(".jpg")]
+        if not imagens:
+            return False, "não há imagens para aplicar a operação morfológica"
+        for img_nome in imagens:
+            caminho_img = os.path.join(folder_path, img_nome)
+            if operation == "erode":
+                success, message = imageProcessing.erode_image(caminho_img, kernel_size)
+            elif operation == "dilate":
+                success, message = imageProcessing.dilate_image(caminho_img, kernel_size)
+            else:
+                return False, "Operação inválida. Use 'erode' ou 'dilate'."
+            if not success:
+                return False, f"Erro ao aplicar {operation} na imagem {img_nome}: {message}"
+        return True, f"Operação {operation} aplicada com sucesso em todas as imagens."
+
     
-        img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+    def erode_image(img_path, kernel_size=5):
+        cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
         kernel = np.ones((kernel_size, kernel_size), np.uint8)
-        if operation == "erode":
-            processed_img = cv2.erode(img, kernel, iterations=1)
-        elif operation == "dilate":
-            processed_img = cv2.dilate(img, kernel, iterations=1)
-        else:
-            return False, "Operação inválida. Use 'erode' ou 'dilate'."
-        output_path = f"{operation}_image.jpg"
-        cv2.imwrite(output_path, processed_img)
-        return True, f"Operação morfológica '{operation}' aplicada com sucesso."
+        eroded_img = cv2.erode(img_path, kernel, iterations=1)  
+        cv2.imwrite(img_path, eroded_img) #overites the original image
+        return True, "Erosão aplicada com sucesso."
+    
+    def dilate_image(img_path, kernel_size=5):
+        cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+        kernel = np.ones((kernel_size, kernel_size), np.uint8)
+        dilated_img = cv2.dilate(img_path, kernel, iterations=1)  
+        cv2.imwrite(img_path, dilated_img) #overites the original image
+        return True, "Dilatação aplicada com sucesso."
 
     
 

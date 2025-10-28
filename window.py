@@ -4,6 +4,7 @@ from tkinter import Button, Label, filedialog, messagebox, StringVar, Frame
 from fileManager import FileManager as fm
 from videoProcessing import videoProcessing as vp
 from imageProcessing import imageProcessing as ip
+from tkinter import PhotoImage
 
 
 class Window():
@@ -40,13 +41,25 @@ class Window():
         self.root = tk()
         # Configurações da janela principal
         self.root.title("Processamento de vídeo") 
-        self.root.geometry("700x350")
-        self.root.resizable(False, False)
+        self.root.geometry("1000x700")
         self.root.update_idletasks()
         self.root.minsize(self.root.winfo_width(), self.root.winfo_height())
         self.video_path = StringVar()
         self.contador_var = StringVar()
-        # Arrumar médotos do fileManager para usar constante PASTA_FRAMES
+
+        #pre-process frame    
+        self.TopFrame = Frame(self.root, width=950, height=300, bg="lightgray")
+        image = PhotoImage(file="videoPlaceholder\placeholder-video.png")
+        image = image.subsample(3,3)
+        self.ThumbLabel = Label(self.TopFrame, image= image, bg="lightgray", font=("Arial", 14))
+        self.ThumbLabel.pack(pady=10, side="left") 
+        self.TopFrame.pack(side="top", pady=10, padx=10)
+        self.root.mainloop()
+        
+
+
+    """  
+       # Arrumar médotos do fileManager para usar constante PASTA_FRAMES
         self.atualizar_contador_frames(self.fileMng.contar_frames(self.fileMng.PASTA_FRAMES))
         Label(self.root, text="Ferramenta de Extração e Segmentação de Frames", font=("Arial", 12)).pack(pady=10)
 
@@ -71,15 +84,15 @@ class Window():
         Button(self.filtro_frame, text="Máscara Diferença de Frames", command=self.call_mascara_diferenca_frames, width=30).pack(side="left", pady=5)
 
         # Area de pós-processamento
-        Label(self.filtro_frame, text="Pós-Processamento", font=("Arial", 12)).pack(pady=10)
-        Button(self.filtro_frame, text="Dilatação", command=self.call_aplicar_mascara_mediana, width=30).pack(side="left", pady=5)
-        Button(self.filtro_frame, text="Erosão", command=self.call_mascara_diferenca_frames, width=30).pack(side="left", pady=5)
+        Label(self.filtro_frame, text="Pós-Processamento", font=("Arial", 12)).pack(pady=20)
+        Button(self.filtro_frame, text="Dilatação", command=self.call_aplicar_mascara_mediana, width=30).pack(side="left", pady=25)
+        Button(self.filtro_frame, text="Erosão", command=self.call_mascara_diferenca_frames, width=30).pack(side="left", pady=25)
 
        #Área de arquivos
         Button(self.root, text="Limpar cache de frames", command=self.call_limpar_cache, width=30).pack(pady=5)       
-        self.root.mainloop()
+     """
         
-
+    
     '''
     This method must be called after any file operation that involves add or remove frame files in system folders
     User save folders are an exception, as they are not monitored for changes
@@ -129,16 +142,7 @@ class Window():
     If successful, it updates the frame counter in the GUI
     '''
 
-    def call_limpar_cache(self):
-
-        if self.fileMng.limpar_cache(self.fileMng.PASTA_FRAMES):
-            self.atualizar_contador_frames(0)
-            messagebox.showinfo("Cache limpo", "Pasta de frames apagada com sucesso.")
-            self.pre_processado = False
-            self.frames_extraidos = False 
-            self.segmentado = False
-        else:
-            messagebox.showinfo("Cache limpo", "Nenhuma pasta de frames foi encontrada.")
+   
    
     
     '''
@@ -196,18 +200,7 @@ class Window():
             messagebox.showerror("fileMng.verificar_diretorio return false", "Não foi possível acessar ou criar a pasta de frames.")() 
             
         
-    def select_folder_dialog(self , call = 'SALVAR'):
-        opcoes = []
-        if call == 'SALVAR':
-            titulo = 'Salvar Pasta'
-            mensagem = "Qual operação deseja salvar?"
-            opcoes = [fm.PASTA_PRE_PROCESS, fm.PASTA_DIFF, fm.FRAME_MEDIANO, fm.ALL]
-        elif call == 'ABRIR':
-            titulo = 'Abrir Pasta'
-            mensagem = "Qual operação deseja abrir?"
-            opcoes = [fm.PASTA_DIFF, fm.FRAME_MEDIANO]
-        resposta =   messagebox.askquestion(titulo, mensagem, opcoes)
-        return resposta 
+     
         
     def call_dilatar_mascara(self):
         operacao = self.select_folder_dialog(self, 'ABRIR')
@@ -237,6 +230,7 @@ class Window():
        
        
     def call_erosao_mascara(self):
+
         if(not self.frames_extraidos):
             messagebox.showerror("Erro", "Nenhum frame extraído. Extraia frames primeiro.")
             return
@@ -250,3 +244,27 @@ class Window():
                 messagebox.showinfo("Erosão aplicada", mensagem)
             else:
                 messagebox.showerror("Erro ao aplicar erosão", mensagem)
+   
+    def call_limpar_cache(self):
+
+        if self.fileMng.limpar_cache(self.fileMng.PASTA_FRAMES):
+            self.atualizar_contador_frames(0)
+            messagebox.showinfo("Cache limpo", "Pasta de frames apagada com sucesso.")
+            self.pre_processado = False
+            self.frames_extraidos = False 
+            self.segmentado = False
+        else:
+            messagebox.showinfo("Cache limpo", "Nenhuma pasta de frames foi encontrada.")
+
+    def select_folder_dialog(self , call = 'SALVAR'):
+        opcoes = []
+        if call == 'SALVAR':
+            titulo = 'Salvar Pasta'
+            mensagem = "Qual operação deseja salvar?"
+            opcoes = [fm.PASTA_PRE_PROCESS, fm.PASTA_DIFF, fm.FRAME_MEDIANO, fm.ALL]
+        elif call == 'ABRIR':
+            titulo = 'Abrir Pasta'
+            mensagem = "Qual operação deseja abrir?"
+            opcoes = [fm.PASTA_DIFF, fm.FRAME_MEDIANO]
+        resposta =   messagebox.askquestion(titulo, mensagem, opcoes)
+        return resposta

@@ -5,8 +5,9 @@ class FileManager:
     PASTA_FRAMES = "frames_extraidos"
     FRAME_MEDIANO = "frame_mediano"
     PASTA_PRE_PROCESS = "gauss_Gray"
+    PASTA_MEDIANO= "mascaras_mediana"
     PASTA_DIFF= "mascaras_FrameDiff"
-    ALL = [PASTA_FRAMES, FRAME_MEDIANO, PASTA_PRE_PROCESS, PASTA_DIFF]
+    ALL = [PASTA_FRAMES, FRAME_MEDIANO, PASTA_PRE_PROCESS, PASTA_DIFF, PASTA_MEDIANO]
 
     def __init__(self):
            self.criar_pasta(self.PASTA_FRAMES)
@@ -23,13 +24,14 @@ class FileManager:
             return len([f for f in os.listdir(FileManager.PASTA_FRAMES) if f.endswith(".jpg")])
         return 0
 
-    def limpar_cache(self, caminho):
-        if os.path.exists(caminho):
-            shutil.rmtree(caminho)
-            print("Cache limpo: Pasta de frames apagada com sucesso.")
-        else:
-            print("Cache limpo: Nenhuma pasta de frames foi encontrada.")
-        return FileManager.contar_frames()
+    def limpar_cache(self, *filepaths):
+        for caminho in filepaths:
+            if os.path.exists(caminho):
+                shutil.rmtree(caminho)
+                print(f"Cache limpo: {caminho} apagado com sucesso.")
+            else:
+                print("Cache limpo: Nenhuma pasta foi encontrada.")
+            return FileManager.contar_frames()
     
     #esse método deve ser chamado para tratar erros de caminho
     def verificar_diretorio(self,caminho):
@@ -47,6 +49,8 @@ class FileManager:
                 print(f"A pasta de destino '{caminho_destino}' já existe.")
         except Exception as e:
             print(f"Erro ao copiar a pasta: {e}")
+
+
          
     
 
