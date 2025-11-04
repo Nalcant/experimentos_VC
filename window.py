@@ -42,11 +42,12 @@ class Window():
         self.root = tk()
         # Configurações da janela principal
         self.root.title("Processamento de vídeo") 
-        self.root.geometry("1000x600")
+        self.root.geometry("1000x700")
         self.root.update_idletasks()
-        self.root.minsize(self.root.winfo_width(), self.root.winfo_height())
+        self.root.wm_attributes("-topmost", True)
         self.video_path = StringVar()
         self.contador_var = StringVar()
+        self.Methods["Fundo mediano", "Diferença de Frames"]
 
         #pre-process frame    
         self.TopFrame = Frame(self.root, width=950, height=300, bg="lightgray")
@@ -67,11 +68,22 @@ class Window():
         self.label_video_path = Label(self.TopFrame, text="Nenhum vídeo selecionado", wraplength=500)
         self.label_video_path.pack(pady=5, side="top")
 
-
-
-
+        #processamento 
+        self.leftFrame = Frame(self.root, width=460, height=300, bg="lightgray")
+        self.leftFrame.pack(side="left", pady=10, padx=25)
+        self.leftFrame.pack_propagate(False)
         
+        self.lbLftFrameTitle = Label(self.leftFrame, text="Processamento", font=("Arial", 16), bg= "lightgray")
+        self.lbLftFrameTitle.pack(side="top", pady=10, padx=10)
+       
+        #arquivos
+        self.rightFrame = Frame(self.root, width=460, height=300, bg="lightgray")
+        self.rightFrame.pack(side="right", pady=10, padx=25)
+        self.rightFrame.pack_propagate(False)
 
+        self.lbLftFrameTitle = Label(self.rightFrame, text="Arquivos", font=("Arial", 16), bg= "lightgray")
+        self.lbLftFrameTitle.pack(side="top", pady=10, padx=10)
+        
         self.root.mainloop()
      
 
