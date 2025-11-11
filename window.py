@@ -5,7 +5,6 @@ from fileManager import FileManager as fm
 from videoProcessing import videoProcessing as vp
 from imageProcessing import imageProcessing as ip
 from tkinter import PhotoImage
-from PIL import Image, ImageTk
 
 
 class Window():
@@ -47,7 +46,9 @@ class Window():
         self.root.wm_attributes("-topmost", True)
         self.video_path = StringVar()
         self.contador_var = StringVar()
-        self.Methods["Fundo mediano", "Diferença de Frames"]
+        self.methods = ["Fundo mediano", "Diferença de Frames"]
+        self.morpho = ["Dilatar", "Erodir"]
+        self.folderCheks = {}
 
         #pre-process frame    
         self.TopFrame = Frame(self.root, width=950, height=300, bg="lightgray")
@@ -68,59 +69,61 @@ class Window():
         self.label_video_path = Label(self.TopFrame, text="Nenhum vídeo selecionado", wraplength=500)
         self.label_video_path.pack(pady=5, side="top")
 
-        #processamento 
+        ''' processamento frame  '''
         self.leftFrame = Frame(self.root, width=460, height=300, bg="lightgray")
         self.leftFrame.pack(side="left", pady=10, padx=25)
         self.leftFrame.pack_propagate(False)
         
         self.lbLftFrameTitle = Label(self.leftFrame, text="Processamento", font=("Arial", 16), bg= "lightgray")
         self.lbLftFrameTitle.pack(side="top", pady=10, padx=10)
-       
-        #arquivos
+
+        #radio buttons para escolher método de segmentação
+        self.method_var = StringVar(value="Fundo mediano")
+
+        for method in self.methods:
+            radio_button = ttk.Radiobutton(self.leftFrame, text=method, variable=self.method_var, value=method)
+            radio_button.pack(side="top", pady=5)
+
+        #radio buttons para escolher operação morfológica
+        self.morpho_var = StringVar(value="Dilatar")
+        for operacao in self.morpho:
+            radio_button = ttk.Radiobutton(self.leftFrame, text=operacao, variable=self.morpho_var, value=operacao)
+            radio_button.pack(side="top", pady=5)
+
+        self.leftFrameButtonProcess = Button(self.leftFrame, text="Aplicar método", command= self.call_applyMethod, width=25)
+        self.leftFrameButtonProcess.pack(side="left", pady=10, padx=20) 
+
+
+        self.leftFrameButtonMorpho = Button(self.leftFrame, text="Operação morfológica", command= self.call_morphoOperation, width=25)
+        self.leftFrameButtonMorpho.pack(side="right", pady=10, padx=20)  
+        
+        """arquivos"""
+
         self.rightFrame = Frame(self.root, width=460, height=300, bg="lightgray")
         self.rightFrame.pack(side="right", pady=10, padx=25)
         self.rightFrame.pack_propagate(False)
 
         self.lbLftFrameTitle = Label(self.rightFrame, text="Arquivos", font=("Arial", 16), bg= "lightgray")
         self.lbLftFrameTitle.pack(side="top", pady=10, padx=10)
+
+        for folder in self.fileMng.ALL:
+            var = StringVar(value=folder)
+            chk = ttk.Checkbutton(self.rightFrame, text=folder, variable=var)
+            chk.pack(side="top", pady=5)
+            self.folderCheks[folder] = var
+        self.rightFrameButtonSaveCache = Button(self.rightFrame, text="Salvar Cache", command= self.call_salvar_cache, width=20)
+        self.rightFrameButtonSaveCache.pack(side="top", pady=10)
+
+        self.rightFrameButtonClearCache = Button(self.rightFrame, text="Limpar Cache", command= self.call_limpar_cache, width=20)
+        self.rightFrameButtonClearCache.pack(side="top", pady=10)
+        
+
+
+
+
         
         self.root.mainloop()
-     
 
-
-    """  
-       # Arrumar médotos do fileManager para usar constante PASTA_FRAMES
-        self.atualizar_contador_frames(self.fileMng.contar_frames(self.fileMng.PASTA_FRAMES))
-        Label(self.root, text="Ferramenta de Extração e Segmentação de Frames", font=("Arial", 12)).pack(pady=10)
-
-        Button(self.root, text="Selecionar vídeo MP4", command=self.selecionar_video, width=30).pack()
-        self.label_video_path = Label(self.root, text="Nenhum vídeo selecionado", wraplength=500)
-        self.label_video_path.pack(pady=5)
-
-        Button(self.root, text="Processar vídeo (Extrair Frames)", command= self.call_extrair_frames, width=30).pack(pady=5)
-        
-        # Frame horizontal para botão + contador
-        self.filtro_frame = Frame(self.root)
-
-        self.filtro_frame.pack(pady=5)
-        # Area de pré-processamento
-        Label(self.filtro_frame, text="Pré-Processamento", font=("Arial", 12)).pack(pady=10)
-        Button(self.filtro_frame, text="Aplicar filtro grayscale + bilateral", command=self.call_aplicar_filtros, width=30).pack(pady=5)
-        Label(self.filtro_frame, textvariable=contador_var, fg="blue", font=("Arial", 10, "bold"), padx=10).pack(pady=5)
-
-        # Area de máscaras
-        Label(self.filtro_frame, text="Máscaras", font=("Arial", 12)).pack(pady=10)
-        Button(self.filtro_frame, text="Máscara Mediana", command=self.call_aplicar_mascara_mediana, width=30).pack(side="left", pady=5)
-        Button(self.filtro_frame, text="Máscara Diferença de Frames", command=self.call_mascara_diferenca_frames, width=30).pack(side="left", pady=5)
-
-        # Area de pós-processamento
-        Label(self.filtro_frame, text="Pós-Processamento", font=("Arial", 12)).pack(pady=20)
-        Button(self.filtro_frame, text="Dilatação", command=self.call_aplicar_mascara_mediana, width=30).pack(side="left", pady=25)
-        Button(self.filtro_frame, text="Erosão", command=self.call_mascara_diferenca_frames, width=30).pack(side="left", pady=25)
-
-       #Área de arquivos
-        Button(self.root, text="Limpar cache de frames", command=self.call_limpar_cache, width=30).pack(pady=5)       
-     """
         
     
     '''
@@ -182,7 +185,7 @@ class Window():
    
     
     '''
-    This method calls the imageProcessing to apply a black and white filter to the extracted frames
+    This method calls the imageProcessing to apply a black and white filter and bilateral filter to the extracted frames
     It first checks if there are extracted frames and if the frames directory is accessible
     If successful, it shows a success message
     '''
@@ -200,7 +203,22 @@ class Window():
         else:
             messagebox.showerror("fileMng.verificar_diretorio return false", "Não foi possível acessar ou criar a pasta de frames.")()
     
+    def call_applyMethod(self):
+        metodo = self.method_var.get()
+        if(metodo == "Fundo mediano"):
+            self.call_aplicar_mascara_mediana()
+        elif(metodo == "Diferença de Frames"):
+            self.call_mascara_diferenca_frames()
+
+    def call_morphoOperation(self):
+        operacao = self.morpho_var.get()
+        if(operacao == "Dilatação"):
+            self.call_dilatar_mascara()
+        elif(operacao == "Erosão"):
+            self.call_erosao_mascara()
+
     def call_aplicar_mascara_mediana(self):
+        #primeiro é feito a modelagem do frame mediano
         self.imageProcessing.median_frame(self.fileMng.PASTA_FRAMES)
         if(not self.frames_extraidos):
             messagebox.showerror("Erro", "Nenhum frame extraído. Extraia frames primeiro.")
@@ -292,15 +310,11 @@ class Window():
         else:
             messagebox.showinfo("Cache limpo", "Nenhuma pasta de frames foi encontrada.")
 
-    def select_folder_dialog(self , call = 'SALVAR'):
-        opcoes = []
-        if call == 'SALVAR':
-            titulo = 'Salvar Pasta'
-            mensagem = "Qual operação deseja salvar?"
-            opcoes = [fm.PASTA_PRE_PROCESS, fm.PASTA_DIFF, fm.FRAME_MEDIANO, fm.ALL]
-        elif call == 'ABRIR':
-            titulo = 'Abrir Pasta'
-            mensagem = "Qual operação deseja abrir?"
-            opcoes = [fm.PASTA_DIFF, fm.FRAME_MEDIANO]
-        resposta =   messagebox.askquestion(titulo, mensagem, opcoes)
-        return resposta
+    def call_salvar_cache(self):
+        pasta_destino = filedialog.askdirectory(title="Selecione a pasta de destino para salvar o cache")
+        if not pasta_destino:
+            return
+        if self.fileMng.iterar_salvar_cache(pasta_destino, [folder for folder, var in self.folderCheks.items() if var.get()]):
+            messagebox.showinfo("Cache salvo", f"Pasta de frames salva com sucesso em '{pasta_destino}'.")
+        else:
+            messagebox.showerror("Erro ao salvar cache", "Não foi possível salvar a pasta de frames.")

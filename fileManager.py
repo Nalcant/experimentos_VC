@@ -2,9 +2,11 @@ import os
 import shutil
 
 class FileManager:
+
+    '''beware of the folder structure when saving masks, each method saves to its own folder'''
     PASTA_FRAMES = "frames_extraidos"
     FRAME_MEDIANO = "frame_mediano"
-    PASTA_PRE_PROCESS = "gauss_Gray"
+    PASTA_PRE_PROCESS = "bilateral_Gray"
     PASTA_MEDIANO= "mascaras_mediana"
     PASTA_DIFF= "mascaras_FrameDiff"
     ALL = [PASTA_FRAMES, FRAME_MEDIANO, PASTA_PRE_PROCESS, PASTA_DIFF, PASTA_MEDIANO]
@@ -50,7 +52,23 @@ class FileManager:
         except Exception as e:
             print(f"Erro ao copiar a pasta: {e}")
 
-
+    def salvar_cache(self, caminho_origem, caminho_destino):
+        try:
+            if os.path.exists(caminho_origem):
+                shutil.copytree(caminho_origem, caminho_destino)
+                print(f"Cache salvo: Pasta copiada de '{caminho_origem}' para '{caminho_destino}' com sucesso.")
+                return True
+            else:
+                print(f"Erro ao salvar cache: A pasta de origem '{caminho_origem}' não existe.")
+                return False
+        except Exception as e:
+            print(f"Erro ao salvar o cache: {e}")
+            return False
+        
+    def iterar_salvar_cache(self, caminho_destino_base, selected_folders):
+        for pasta in selected_folders:
+            caminho_destino = os.path.join(caminho_destino_base, pasta)
+            self.salvar_cache(pasta, caminho_destino)
          
     
 
