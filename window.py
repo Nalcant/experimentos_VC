@@ -65,9 +65,17 @@ class Window():
         self.lbTopFrameTitle.pack(side = "top", pady= 10)
         self.bVideoSelect = Button(self.TopFrame, text="Selecionar vídeo", command=self.selecionar_video, width=30, )
         self.bVideoSelect.pack(side="top", padx= 10, pady= 10)
+
+        
         
         self.label_video_path = Label(self.TopFrame, text="Nenhum vídeo selecionado", wraplength=500)
         self.label_video_path.pack(pady=5, side="top")
+
+        self.bExtractFrames = Button(self.TopFrame, text="Extrair Frames", command=self.call_extrair_frames, width=30)
+        self.bExtractFrames.pack(side="top", padx= 10, pady= 10)
+
+        self.bApplyFilters = Button(self.TopFrame, text="Aplicar Filtros", command=self.call_aplicar_filtros, width=30)
+        self.bApplyFilters.pack(side="top", padx= 10, pady= 10)
 
         ''' processamento frame  '''
         self.leftFrame = Frame(self.root, width=460, height=300, bg="lightgray")
