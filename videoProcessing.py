@@ -36,7 +36,7 @@ class videoProcessing():
             print("Não foi possível pegar o primeiro frame")
             return
         else:
-             self.fm.criar_pasta("thumbNail")
+             self.fm.criar_pasta("thumbnail")
              caminho_thumbNail = os.path.join("thumbnail", "thumbnail.png")
              frame = cv2.resize(frame, (400, 250))
              cv2.imwrite(caminho_thumbNail, frame)

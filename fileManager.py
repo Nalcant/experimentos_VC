@@ -6,9 +6,9 @@ class FileManager:
     '''beware of the folder structure when saving masks, each method saves to its own folder'''
     PASTA_FRAMES = "frames_extraidos"
     FRAME_MEDIANO = "frame_mediano"
-    PASTA_PRE_PROCESS = "bilateral_Gray"
+    PASTA_PRE_PROCESS = "bilateral_gray"
     PASTA_MEDIANO= "mascaras_mediana"
-    PASTA_DIFF= "mascaras_FrameDiff"
+    PASTA_DIFF= "mascaras_frameDiff"
     ALL = [PASTA_FRAMES, FRAME_MEDIANO, PASTA_PRE_PROCESS, PASTA_DIFF, PASTA_MEDIANO]
 
     def __init__(self):
