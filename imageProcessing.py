@@ -2,7 +2,7 @@ import cv2 as cv2
 import os
 import numpy as np
 import fileManager as fm
-class imageProcessing:
+class ImageProcessing:
     frameDir = fm.FileManager.PASTA_FRAMES
     
     def __init__(self):
@@ -221,9 +221,9 @@ class imageProcessing:
         for img_nome in imagens:
             caminho_img = os.path.join(folder_path, img_nome)
             if operation == "erode":
-                success, message = imageProcessing.erode_image(caminho_img, kernel_size)
+                success, message = ImageProcessing.erode_image(caminho_img, kernel_size)
             elif operation == "dilate":
-                success, message = imageProcessing.dilate_image(caminho_img, kernel_size)
+                success, message = ImageProcessing.dilate_image(caminho_img, kernel_size)
             else:
                 return False, "Operação inválida. Use 'erode' ou 'dilate'."
             if not success:

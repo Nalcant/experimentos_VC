@@ -3,7 +3,7 @@ from tkinter import ttk
 from tkinter import Button, Label, filedialog, messagebox, StringVar, Frame
 from fileManager import FileManager as fm
 from videoProcessing import videoProcessing as vp
-from imageProcessing import imageProcessing as ip
+from imageProcessing import ImageProcessing as ip
 from tkinter import PhotoImage
 
 
@@ -98,11 +98,11 @@ class Window():
             radio_button = ttk.Radiobutton(self.leftFrame, text=operacao, variable=self.morpho_var, value=operacao)
             radio_button.pack(side="top", pady=5)
 
-        self.leftFrameButtonProcess = Button(self.leftFrame, text="Aplicar método", command= self.call_applyMethod, width=25)
+        self.leftFrameButtonProcess = Button(self.leftFrame, text="Aplicar método", command= self.call_aplicar_metodo, width=25)
         self.leftFrameButtonProcess.pack(side="left", pady=10, padx=20) 
 
 
-        self.leftFrameButtonMorpho = Button(self.leftFrame, text="Operação morfológica", command= self.call_morphoOperation, width=25)
+        self.leftFrameButtonMorpho = Button(self.leftFrame, text="Operação morfológica", command= self.call_operacao_morfo, width=25)
         self.leftFrameButtonMorpho.pack(side="right", pady=10, padx=20)  
         
         """arquivos"""
@@ -211,14 +211,14 @@ class Window():
         else:
             messagebox.showerror("fileMng.verificar_diretorio return false", "Não foi possível acessar ou criar a pasta de frames.")()
     
-    def call_applyMethod(self):
+    def call_aplicar_metodo(self):
         metodo = self.method_var.get()
         if(metodo == "Fundo mediano"):
             self.call_aplicar_mascara_mediana()
         elif(metodo == "Diferença de Frames"):
             self.call_mascara_diferenca_frames()
 
-    def call_morphoOperation(self):
+    def call_operacao_morfo(self):
         operacao = self.morpho_var.get()
         if(operacao == "Dilatação"):
             self.call_dilatar_mascara()
