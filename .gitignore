@@ -1,4 +1,11 @@
-/frames_extraidos*
-/mascaras*
-/frame_mediano/
+
 /*.pyc
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.webp
+
+!videoPlaceholder\placeholder-video.png

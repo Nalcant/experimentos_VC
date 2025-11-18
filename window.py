@@ -3,7 +3,7 @@ from tkinter import ttk
 from tkinter import Button, Label, filedialog, messagebox, StringVar, Frame
 from fileManager import FileManager as fm
 from videoProcessing import videoProcessing as vp
-from imageProcessing import imageProcessing as ip
+from imageProcessing import ImageProcessing as ip
 from tkinter import PhotoImage
 
 
@@ -21,12 +21,12 @@ class Window():
     Remember to manually update these flags back to false when manual testing
     '''
     #só é possível processar frames se o vídeo for selecionado
-    selecionado = True
+    selecionado = False
     #só é possível aplicar o filtros ou limpar cache se houver frames extraídos
-    frames_extraidos= True
+    frames_extraidos= False
 
     #só é possível segmentar após aplicar o filtro preto e branco
-    pre_processado = True
+    pre_processado = False
     
     # só é possível pós processar após segmentar
     segmentado = False
@@ -48,7 +48,7 @@ class Window():
         self.contador_var = StringVar()
         self.methods = ["Fundo mediano", "Diferença de Frames"]
         self.morpho = ["Dilatar", "Erodir"]
-        self.folderCheks = {}
+        self.folderChecks = {}
 
         #pre-process frame    
         self.TopFrame = Frame(self.root, width=950, height=300, bg="lightgray")
@@ -98,11 +98,11 @@ class Window():
             radio_button = ttk.Radiobutton(self.leftFrame, text=operacao, variable=self.morpho_var, value=operacao)
             radio_button.pack(side="top", pady=5)
 
-        self.leftFrameButtonProcess = Button(self.leftFrame, text="Aplicar método", command= self.call_applyMethod, width=25)
+        self.leftFrameButtonProcess = Button(self.leftFrame, text="Aplicar método", command= self.call_aplicar_metodo, width=25)
         self.leftFrameButtonProcess.pack(side="left", pady=10, padx=20) 
 
 
-        self.leftFrameButtonMorpho = Button(self.leftFrame, text="Operação morfológica", command= self.call_morphoOperation, width=25)
+        self.leftFrameButtonMorpho = Button(self.leftFrame, text="Operação morfológica", command= self.call_operacao_morfo, width=25)
         self.leftFrameButtonMorpho.pack(side="right", pady=10, padx=20)  
         
         """arquivos"""
@@ -114,22 +114,22 @@ class Window():
         self.lbLftFrameTitle = Label(self.rightFrame, text="Arquivos", font=("Arial", 16), bg= "lightgray")
         self.lbLftFrameTitle.pack(side="top", pady=10, padx=10)
 
+        #checkboxes para escolher quais pastas salvar
         for folder in self.fileMng.ALL:
-            var = StringVar(value=folder)
+            var = StringVar(value="0")
+            chk = ttk.Checkbutton(self.rightFrame,text=folder,variable=var,
+            onvalue="1",
+            offvalue="0")
             chk = ttk.Checkbutton(self.rightFrame, text=folder, variable=var)
             chk.pack(side="top", pady=5)
-            self.folderCheks[folder] = var
+            self.folderChecks[folder] = var 
         self.rightFrameButtonSaveCache = Button(self.rightFrame, text="Salvar Cache", command= self.call_salvar_cache, width=20)
         self.rightFrameButtonSaveCache.pack(side="top", pady=10)
 
         self.rightFrameButtonClearCache = Button(self.rightFrame, text="Limpar Cache", command= self.call_limpar_cache, width=20)
         self.rightFrameButtonClearCache.pack(side="top", pady=10)
-        
 
-
-
-
-        
+        self.inicializar_flags()
         self.root.mainloop()
 
         
@@ -211,21 +211,54 @@ class Window():
         else:
             messagebox.showerror("fileMng.verificar_diretorio return false", "Não foi possível acessar ou criar a pasta de frames.")()
     
+<<<<<<< HEAD
     def call_applyMethod(self):
+        if not self.pre_processado:
+            messagebox.showerror("Não houve pré-processamento", "Aplique os filtros antes de executar um método de processamento")
+
+=======
+    def call_aplicar_metodo(self):
+>>>>>>> 2286cffc853a19df29e948139d5f548ca5a2f068
         metodo = self.method_var.get()
         if(metodo == "Fundo mediano"):
-            self.call_aplicar_mascara_mediana()
+            self.call_mascara_mediana()
         elif(metodo == "Diferença de Frames"):
             self.call_mascara_diferenca_frames()
+        else:
+            print("metodo não especificado")
 
+<<<<<<< HEAD
     def call_morphoOperation(self):
+        
+        if not self.segmentado:
+            messagebox.showerror("Não houve processamento", "Nenhum método foi utilizado para que possa ser pós-processado")
+        
+        metodo = self.method_var.get()
+        print(metodo)
+        
+        if not self.fileMng.verificar_arquivos(metodo):
+            messagebox.showerror("Arquivos inexistentes", f"O método {metodo} ainda não foi processado")    
+            return
+=======
+    def call_operacao_morfo(self):
         operacao = self.morpho_var.get()
         if(operacao == "Dilatação"):
             self.call_dilatar_mascara()
         elif(operacao == "Erosão"):
             self.call_erosao_mascara()
+>>>>>>> 2286cffc853a19df29e948139d5f548ca5a2f068
 
-    def call_aplicar_mascara_mediana(self):
+        operacao = self.morpho_var.get()
+        print(operacao)
+        
+        if(operacao == "Dilatar"):
+            self.call_dilatar_mascara(metodo)
+        elif(operacao == "Erodir"):
+            self.call_erosao_mascara(metodo)
+        else:
+            print("operação não especificada")
+
+    def call_mascara_mediana(self):
         #primeiro é feito a modelagem do frame mediano
         self.imageProcessing.median_frame(self.fileMng.PASTA_FRAMES)
         if(not self.frames_extraidos):
@@ -234,8 +267,8 @@ class Window():
         elif(not self.pre_processado):
             messagebox.showerror("Erro", "Frames não pré-processados. Aplique os filtros primeiro.")
             return
-        if self.fileMng.verificar_diretorio(self.fileMng.PASTA_FRAMES):
-            resultado, mensagem = self.imageProcessing.median_mask(self.fileMng.PASTA_FRAMES, self.fileMng.FRAME_MEDIANO)
+        if self.fileMng.verificar_diretorio(self.fileMng.PASTA_PRE_PROCESS):
+            resultado, mensagem = self.imageProcessing.median_mask(self.fileMng.PASTA_PRE_PROCESS, self.fileMng.FRAME_MEDIANO)
             if resultado:
                 messagebox.showinfo("Máscara aplicada", mensagem)
                 self.segmentado = True
@@ -251,8 +284,8 @@ class Window():
         if(not self.pre_processado):
             messagebox.showerror("Erro", "Frames não pré-processados. Aplique os filtros primeiro.")
             return
-        if self.fileMng.verificar_diretorio(self.fileMng.PASTA_FRAMES):
-            resultado, mensagem = self.imageProcessing.mascara_diferenca_frames(self.fileMng.PASTA_FRAMES)
+        if self.fileMng.verificar_diretorio(self.fileMng.PASTA_PRE_PROCESS):
+            resultado, mensagem = self.imageProcessing.diff_iterator()
             if resultado:
                 messagebox.showinfo("Máscara aplicada", mensagem)
                 self.segmentado = True
@@ -264,65 +297,67 @@ class Window():
         
      
         
-    def call_dilatar_mascara(self):
-        operacao = self.select_folder_dialog(self, 'ABRIR')
-        if not operacao:
-            return
-        if self.fileMng.verificar_diretorio(operacao):
-            resultado, mensagem = self.imageProcessing.dilatar_iterator(operacao)
-            if resultado:
-                messagebox.showinfo("Dilatação aplicada", mensagem)
-            else:
-                messagebox.showerror("Erro ao aplicar dilatação", mensagem)
+    def call_dilatar_mascara(self, metodo):   
+        print("chamada call dilatar") 
+        if(metodo == "Fundo mediano"):
+            folder = self.fileMng.PASTA_MEDIANO
+        elif(metodo == "Diferença de Frames"):
+            folder = self.fileMng.PASTA_DIFF
+        resultado, mensagem = self.imageProcessing.iterar_dilatar(folder)
+        if resultado:
+            messagebox.showinfo("Dilatação aplicada", mensagem)
         else:
-            messagebox.showerror(f"Operação '{operacao}' ainda não realizada.")
-            
-            if(not self.frames_extraidos):
-                messagebox.showerror("Erro", "Nenhum frame extraído. Extraia frames primeiro.")
-                return
-            if(not self.segmentado):
-                messagebox.showerror("Erro", "Frames não segmentados. Aplique uma máscara primeiro.")
-                return
-            if self.fileMng.verificar_diretorio(self.fileMng.PASTA_FRAMES):
-                resultado, mensagem = self.imageProcessing.dilatar_iterator(self.fileMng.PASTA_FRAMES)
-                if resultado:
-                    messagebox.showinfo("Dilatação aplicada", mensagem)
-                else:
-                    messagebox.showerror("Erro ao aplicar dilatação", mensagem)
-       
-       
-    def call_erosao_mascara(self):
+            messagebox.showerror("Erro ao aplicar dilatação", mensagem)       
+    def call_erosao_mascara(self, metodo):
+        print("chamada call erosao")        
+        if(metodo == "Fundo mediano"):
+            folder = self.fileMng.PASTA_MEDIANO
+        elif(metodo == "Diferença de Frames"):
+            folder = self.fileMng.PASTA_DIFF
+        
+        resultado, mensagem = self.imageProcessing.iterarar_erosao(folder)
+        if resultado:
+            messagebox.showinfo("Erosão aplicada", mensagem)
+        else:
+            messagebox.showerror("Erro ao aplicar erosão", mensagem)
 
-        if(not self.frames_extraidos):
-            messagebox.showerror("Erro", "Nenhum frame extraído. Extraia frames primeiro.")
-            return
-        if(not self.segmentado):
-            messagebox.showerror("Erro", "Frames não segmentados. Aplique uma máscara primeiro.")
-            return
-        if self.fileMng.verificar_diretorio(self.fileMng.PASTA_FRAMES):
-            #AQUI OH messagebox.show
-            resultado, mensagem = self.imageProcessing.erosao_iterator(self.fileMng.PASTA_FRAMES)
-            if resultado:
-                messagebox.showinfo("Erosão aplicada", mensagem)
-            else:
-                messagebox.showerror("Erro ao aplicar erosão", mensagem)
-   
+
     def call_limpar_cache(self):
 
-        if self.fileMng.limpar_cache(self.fileMng.PASTA_FRAMES):
-            self.atualizar_contador_frames(0)
-            messagebox.showinfo("Cache limpo", "Pasta de frames apagada com sucesso.")
-            self.pre_processado = False
-            self.frames_extraidos = False 
-            self.segmentado = False
-        else:
-            messagebox.showinfo("Cache limpo", "Nenhuma pasta de frames foi encontrada.")
+        self.fileMng.iterar_limpar_cache()
+        messagebox.showinfo("Cache limpo", "Pasta de frames apagada com sucesso.")
+        self.inicializar_flags()
+        
 
     def call_salvar_cache(self):
         pasta_destino = filedialog.askdirectory(title="Selecione a pasta de destino para salvar o cache")
+        
         if not pasta_destino:
             return
-        if self.fileMng.iterar_salvar_cache(pasta_destino, [folder for folder, var in self.folderCheks.items() if var.get()]):
-            messagebox.showinfo("Cache salvo", f"Pasta de frames salva com sucesso em '{pasta_destino}'.")
+        res, mensagem = self.fileMng.iterar_salvar_cache(pasta_destino, [folder for folder, var in self.folderChecks.items() if var.get() == "1"])
+
+        if  res:           
+            messagebox.showinfo("Cache salvo", f"Pastas salvas com sucesso em '{pasta_destino}'.")
         else:
-            messagebox.showerror("Erro ao salvar cache", "Não foi possível salvar a pasta de frames.")
+            messagebox.showerror("Erro", mensagem)
+
+    def inicializar_flags(self):
+
+        for arquivos in self.fileMng.MAIN_FOLDERS:
+            if self.fileMng.verificar_arquivos(arquivos):
+                if arquivos == self.fileMng.PASTA_FRAMES:
+                    self.frames_extraidos = True
+                    print("frames extraidos set to TRUE")
+                else:
+                    self.frames_extraidos = False
+                    print("frames extraidos set to FALSE")                    
+                if arquivos == self.fileMng.PASTA_PRE_PROCESS:
+                    self.pre_processado = True
+                    print("pre processado set to TRUE")
+                else:
+                    print("pre processado set to FALSE")
+                if arquivos in [self.fileMng.PASTA_MEDIANO, self.fileMng.PASTA_DIFF]:
+                    self.segmentado = True
+                    print("segmentado set to TRUE")
+                else:
+                    print("segmentado set to FALSE")

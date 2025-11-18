@@ -2,7 +2,7 @@ import cv2 as cv2
 import os
 import numpy as np
 import fileManager as fm
-class imageProcessing:
+class ImageProcessing:
     frameDir = fm.FileManager.PASTA_FRAMES
     
     def __init__(self):
@@ -26,14 +26,18 @@ class imageProcessing:
         #aplica o filtro grayscale em cada imagem encontrada no diretório
         for img_nome in imagens:
             caminho_img = os.path.join(diretorio, img_nome) #caminho completo da imagem
+            print("Caminho da imagem: {}".format(caminho_img))
             imagem = cv2.imread(caminho_img) #lê a imagem
             if(imagem is None):
                 print(f"Erro ao ler a imagem: {caminho_img}")
                 continue
-            pbImg = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY) #converte para grayscale
-            biFilterImg = cv2.bilateralFilter(pbImg,9,150,150) #imagem, diametro, intensidade, distancia
+            grImg = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY) #converte para grayscale
+            biFilterImg = cv2.bilateralFilter(grImg,9,150,150) #imagem, diametro, intensidade, distancia
              #salva a imagem convertida, sobrescrevendo a original
-            cv2.imwrite(fm.FileManager.PASTA_PRE_PROCESS, biFilterImg)
+            print("aplicando filtro bilateral e grayscale na imagem: {}".format(img_nome))
+            print("Salvando imagem processada em: {}".format(os.path.join(fm.FileManager.PASTA_PRE_PROCESS, img_nome))) 
+            output_path = os.path.join(fm.FileManager.PASTA_PRE_PROCESS, img_nome)
+            cv2.imwrite(output_path, biFilterImg)
 
        # self.median_frame(diretorio)
         return True, "Filtro preto e branco aplicado com sucesso."
@@ -77,32 +81,58 @@ class imageProcessing:
     '''
     def median_mask(self, diretorioFrames, diretorioFrameMediano):
         imagens = [f for f in os.listdir(diretorioFrames) if f.endswith(".jpg")]
-        fm.FileManager.criar_pasta(None, "mascaras_frames_mediano")
+
+    # Ordena para garantir sequência correta (frame_0001, frame_0002...)
+        imagens.sort()
+        
         if not imagens:
             return False, "não há imagens para calcular a máscara"
-        for img in imagens:
+
+    # carrega o frame mediano
+        caminho_frame_medio = os.path.join(diretorioFrameMediano, "frame_mediano.jpg")
+        frame_medio = cv2.imread(caminho_frame_medio)
+
+        if frame_medio is None:
+            print(f"Erro ao ler a imagem do frame médio: {caminho_frame_medio}")
+            return False, "erro ao ler a imagem do frame médio"
+
+        # processa apenas a cada 30 frames
+        for i, img in enumerate(imagens):
+
+            # só processa a cada 30 frames
+            if i % 30 != 0:
+                continue
+
             caminho_img = os.path.join(diretorioFrames, img)
             frame = cv2.imread(caminho_img)
-            frame_medio = cv2.imread(os.path.join(diretorioFrameMediano, "frame_mediano.jpg"))
-            if(frame is None):
+
+            if frame is None:
                 print(f"Erro ao ler a imagem: {caminho_img}")
                 return False, "erro ao ler a imagem do frame atual"
-            if(frame_medio is None):
-                print(f"Erro ao ler a imagem do frame médio: {diretorioFrameMediano}")
-                return False, "erro ao ler a imagem do frame médio"
+
             if frame.shape != frame_medio.shape:
                 print(f"Erro: Dimensões incompatíveis entre o frame atual e o frame médio para a imagem: {caminho_img}")
                 return False, "dimensões incompatíveis entre o frame atual e o frame médio"
-             #calcula a diferença absoluta entre o frame atual e o frame médio
-            else:
-                diferenca = cv2.absdiff(frame, frame_medio)
-            th, mascara = cv2.threshold(cv2.cvtColor(diferenca, cv2.COLOR_BGR2GRAY), 30, 255, cv2.THRESH_BINARY)
-            caminho_mascara = os.path.join(fm.FileManager.PASTA_MEDIANO, f"mascara_mediana_{img}")
+
+            # diferença absoluta entre o frame e o frame médio
+            diferenca = cv2.absdiff(frame, frame_medio)
+
+            # limiarização
+            _, mascara = cv2.threshold(
+                cv2.cvtColor(diferenca, cv2.COLOR_BGR2GRAY),
+                30, 255,
+                cv2.THRESH_BINARY
+            )
+
+            # salva a máscara
+            caminho_mascara = os.path.join(
+                fm.FileManager.PASTA_MEDIANO,
+                f"mascara_mediana_{img}"
+            )
             cv2.imwrite(caminho_mascara, mascara)
-            print("Máscara salva em: {}".format(caminho_mascara))
+            print(f"Máscara salva em: {caminho_mascara}")
+
         return True, "máscaras calculadas com sucesso"
-
-
 #median_mask(fm.FileManager.PASTA_FRAMES, os.path.join(fm.FileManager.FRAME_MEDIANO, "frame_mediano.jpg"))
     
 
@@ -113,8 +143,8 @@ class imageProcessing:
     It saves the resulting difference images in a new directory called "FrameDiff".
     '''
     def diff_iterator(self):
-        framePaths = [f for f in os.listdir(self.frameDir) if f.endswith(".jpg")] #lista de frames na pasta
-        fm.FileManager.criar_pasta(None, "mascaras_FrameDiff")
+        preProcess = fm.FileManager.PASTA_PRE_PROCESS
+        framePaths = [f for f in os.listdir(preProcess) if f.endswith(".jpg")] #lista de frames na pasta
         previousFrame = []
         currentFrame = []
         nextFrame = []
@@ -123,7 +153,7 @@ class imageProcessing:
         for i, currentPath in enumerate(framePaths):
         #ler imagem do frame atual
             print("Processando frame: {}".format(currentPath))
-            print("Caminho completo: {}".format(os.path.join(self.frameDir, currentPath)))
+            print("Caminho completo: {}".format(os.path.join(preProcess, currentPath)))
             fullPath = os.path.join(self.frameDir, currentPath)
             currentFrame = cv2.imread(fullPath)
         # se não houver frame anterior, atribuir frameAtual ao anterior e seguir para a próxima iteração
@@ -134,9 +164,8 @@ class imageProcessing:
                 print(type(currentFrame))
                 print(type(self.frameDir))
                 if i+30 < len(framePaths):
-                    fullPath = os.path.join(self.frameDir, framePaths[i+30])
+                    fullPath = os.path.join(preProcess, framePaths[i+30])
                     nextFrame = cv2.imread(fullPath)
-            #O ERRO PODE ESTAR AQUI
                 else:
                     print("fim do frameDiff no frame: {}".format(fullPath))
                 print(len(previousFrame))
@@ -147,6 +176,7 @@ class imageProcessing:
                 caminho = os.path.join(fm.FileManager.PASTA_DIFF, f"diff_{currentPath}")
                 cv2.imwrite(caminho, diffMask)
                 previousFrame = currentFrame
+                return True, "máscaras de diferença entre frames calculadas com sucesso"
 
     '''
      This method calculates the difference between three frames: previous, current, and 
@@ -155,7 +185,7 @@ class imageProcessing:
      '''
     
     #diferenciar com o próximo e o anterior, gerar um frame basedo operação AND entre as duas diferenças
-    def frame_diff(prev_frame, cur_frame, next_frame):
+    def frame_diff(self,prev_frame, cur_frame, next_frame):
         diff_frames_1 = cv2.absdiff(next_frame, cur_frame)
         diff_frames_2 = cv2.absdiff(cur_frame, prev_frame)
         return cv2.bitwise_and(diff_frames_1, diff_frames_2) 
@@ -214,6 +244,18 @@ class imageProcessing:
     saves the resulting image in the current directory
     '''
 
+<<<<<<< HEAD
+    def iterarar_erosao(self, caminho):
+        print("chamada iterar erosão")
+        frames = [f for f in os.listdir(caminho) if f.endswith(".jpg")]
+        for frame in frames:
+            caminho_frame = os.path.join(caminho, frame)
+            res, mensagem = self.erode_image(caminho_frame)
+            if not res:
+                return res, mensagem
+        mensagem = "iterar dilatação concluída com sucesso!"
+        return res, mensagem
+=======
     def iterate_morphological_operation(folder_path, operation, kernel_size=5):
         imagens = [f for f in os.listdir(folder_path) if f.endswith(".jpg")]
         if not imagens:
@@ -221,27 +263,42 @@ class imageProcessing:
         for img_nome in imagens:
             caminho_img = os.path.join(folder_path, img_nome)
             if operation == "erode":
-                success, message = imageProcessing.erode_image(caminho_img, kernel_size)
+                success, message = ImageProcessing.erode_image(caminho_img, kernel_size)
             elif operation == "dilate":
-                success, message = imageProcessing.dilate_image(caminho_img, kernel_size)
+                success, message = ImageProcessing.dilate_image(caminho_img, kernel_size)
             else:
                 return False, "Operação inválida. Use 'erode' ou 'dilate'."
             if not success:
                 return False, f"Erro ao aplicar {operation} na imagem {img_nome}: {message}"
         return True, f"Operação {operation} aplicada com sucesso em todas as imagens."
 
+>>>>>>> 2286cffc853a19df29e948139d5f548ca5a2f068
     
-    def erode_image(img_path, kernel_size=5):
-        cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+    def iterar_dilatar(self, caminho):
+        print("chamada iterar dilatar")
+        frames = [f for f in os.listdir(caminho) if f.endswith(".jpg")]
+        for frame in frames:
+            caminho_frame = os.path.join(caminho, frame)
+            res, mensagem = self.dilate_image(caminho_frame)
+            if not res:
+                return res, mensagem
+        
+        mensagem = "iterar dilatação concluída com sucesso!"
+        return res, mensagem
+    
+    def erode_image(self, img_path, kernel_size=5):
+        frame = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
         kernel = np.ones((kernel_size, kernel_size), np.uint8)
-        eroded_img = cv2.erode(img_path, kernel, iterations=1)  
+        eroded_img = cv2.erode(frame, kernel, iterations=1)  
+        print("erosao: "+ img_path)
         cv2.imwrite(img_path, eroded_img) #overites the original image
         return True, "Erosão aplicada com sucesso."
     
-    def dilate_image(img_path, kernel_size=5):
-        cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+    def dilate_image(self, img_path, kernel_size=5):
+        frame = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
         kernel = np.ones((kernel_size, kernel_size), np.uint8)
-        dilated_img = cv2.dilate(img_path, kernel, iterations=1)  
+        dilated_img = cv2.dilate(frame, kernel, iterations=1)  
+        print("dilatação: "+img_path)
         cv2.imwrite(img_path, dilated_img) #overites the original image
         return True, "Dilatação aplicada com sucesso."
 
