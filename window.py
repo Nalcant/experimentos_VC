@@ -211,14 +211,7 @@ class Window():
         else:
             messagebox.showerror("fileMng.verificar_diretorio return false", "Não foi possível acessar ou criar a pasta de frames.")()
     
-<<<<<<< HEAD
-    def call_applyMethod(self):
-        if not self.pre_processado:
-            messagebox.showerror("Não houve pré-processamento", "Aplique os filtros antes de executar um método de processamento")
-
-=======
     def call_aplicar_metodo(self):
->>>>>>> 2286cffc853a19df29e948139d5f548ca5a2f068
         metodo = self.method_var.get()
         if(metodo == "Fundo mediano"):
             self.call_mascara_mediana()
@@ -227,26 +220,13 @@ class Window():
         else:
             print("metodo não especificado")
 
-<<<<<<< HEAD
-    def call_morphoOperation(self):
-        
-        if not self.segmentado:
-            messagebox.showerror("Não houve processamento", "Nenhum método foi utilizado para que possa ser pós-processado")
-        
-        metodo = self.method_var.get()
-        print(metodo)
-        
-        if not self.fileMng.verificar_arquivos(metodo):
-            messagebox.showerror("Arquivos inexistentes", f"O método {metodo} ainda não foi processado")    
-            return
-=======
     def call_operacao_morfo(self):
+        metodo = self.method_var.get()
         operacao = self.morpho_var.get()
         if(operacao == "Dilatação"):
             self.call_dilatar_mascara()
         elif(operacao == "Erosão"):
             self.call_erosao_mascara()
->>>>>>> 2286cffc853a19df29e948139d5f548ca5a2f068
 
         operacao = self.morpho_var.get()
         print(operacao)
@@ -342,22 +322,24 @@ class Window():
             messagebox.showerror("Erro", mensagem)
 
     def inicializar_flags(self):
-
         for arquivos in self.fileMng.MAIN_FOLDERS:
+            print("verificando "+arquivos)
             if self.fileMng.verificar_arquivos(arquivos):
+                print(f"arquivos encontrados em {arquivos}")
                 if arquivos == self.fileMng.PASTA_FRAMES:
                     self.frames_extraidos = True
                     print("frames extraidos set to TRUE")
-                else:
-                    self.frames_extraidos = False
-                    print("frames extraidos set to FALSE")                    
-                if arquivos == self.fileMng.PASTA_PRE_PROCESS:
+            
+                elif arquivos == self.fileMng.PASTA_PRE_PROCESS:
                     self.pre_processado = True
                     print("pre processado set to TRUE")
-                else:
-                    print("pre processado set to FALSE")
-                if arquivos in [self.fileMng.PASTA_MEDIANO, self.fileMng.PASTA_DIFF]:
+                elif arquivos in [self.fileMng.PASTA_MEDIANO, self.fileMng.PASTA_DIFF]:
                     self.segmentado = True
                     print("segmentado set to TRUE")
-                else:
-                    print("segmentado set to FALSE")
+            else:
+                print(f"nenhum arquivo encontrado em {arquivos}")
+
+
+            
+           
+               

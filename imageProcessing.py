@@ -152,8 +152,7 @@ class ImageProcessing:
             return False, "não há imagens para realizar o frame diff"
         for i, currentPath in enumerate(framePaths):
         #ler imagem do frame atual
-            print("Processando frame: {}".format(currentPath))
-            print("Caminho completo: {}".format(os.path.join(preProcess, currentPath)))
+            print("Processando: {}".format(os.path.join(preProcess, currentPath)))
             fullPath = os.path.join(self.frameDir, currentPath)
             currentFrame = cv2.imread(fullPath)
         # se não houver frame anterior, atribuir frameAtual ao anterior e seguir para a próxima iteração
@@ -161,22 +160,24 @@ class ImageProcessing:
                 previousFrame = currentFrame
             else:
             # se houver posterior, ler posterior
-                print(type(currentFrame))
-                print(type(self.frameDir))
+                #print(type(currentFrame))
+                #print(type(self.frameDir))
                 if i+30 < len(framePaths):
                     fullPath = os.path.join(preProcess, framePaths[i+30])
+                    print("Lendo próximo frame: {}".format(fullPath))
                     nextFrame = cv2.imread(fullPath)
                 else:
                     print("fim do frameDiff no frame: {}".format(fullPath))
-                print(len(previousFrame))
-                print(len(currentFrame))
-                print(len(nextFrame))
+                #print(len(previousFrame))
+                #print(len(currentFrame))
+                #print(len(nextFrame))
                 diffMask = self.frame_diff(previousFrame, currentFrame, nextFrame)
                 threshold_value, diffMask = cv2.threshold(cv2.cvtColor(diffMask, cv2.COLOR_BGR2GRAY), 30, 255, cv2.THRESH_BINARY)
                 caminho = os.path.join(fm.FileManager.PASTA_DIFF, f"diff_{currentPath}")
                 cv2.imwrite(caminho, diffMask)
                 previousFrame = currentFrame
-                return True, "máscaras de diferença entre frames calculadas com sucesso"
+                print("frame anterior atualizado para o frame atual")
+        return True, "máscaras de diferença entre frames calculadas com sucesso"
 
     '''
      This method calculates the difference between three frames: previous, current, and 
@@ -244,18 +245,6 @@ class ImageProcessing:
     saves the resulting image in the current directory
     '''
 
-<<<<<<< HEAD
-    def iterarar_erosao(self, caminho):
-        print("chamada iterar erosão")
-        frames = [f for f in os.listdir(caminho) if f.endswith(".jpg")]
-        for frame in frames:
-            caminho_frame = os.path.join(caminho, frame)
-            res, mensagem = self.erode_image(caminho_frame)
-            if not res:
-                return res, mensagem
-        mensagem = "iterar dilatação concluída com sucesso!"
-        return res, mensagem
-=======
     def iterate_morphological_operation(folder_path, operation, kernel_size=5):
         imagens = [f for f in os.listdir(folder_path) if f.endswith(".jpg")]
         if not imagens:
@@ -272,7 +261,6 @@ class ImageProcessing:
                 return False, f"Erro ao aplicar {operation} na imagem {img_nome}: {message}"
         return True, f"Operação {operation} aplicada com sucesso em todas as imagens."
 
->>>>>>> 2286cffc853a19df29e948139d5f548ca5a2f068
     
     def iterar_dilatar(self, caminho):
         print("chamada iterar dilatar")
