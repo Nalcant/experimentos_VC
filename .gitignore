@@ -1,3 +1,74 @@
+# =========================
+# PYTHON COMPILADO / CACHE
+# =========================
+__pycache__/
+*$py.class
+
+# =========================
+# BUILD / DISTRIBUIÇÃO
+# =========================
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# =========================
+# AMBIENTES VIRTUAIS
+# =========================
+venv/
+.env/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# =========================
+# LOGS E TEMP
+# =========================
+*.log
+*.tmp
+*.temp
+
+# =========================
+# JUPYTER
+# =========================
+.ipynb_checkpoints
+
+# =========================
+# IDE / EDITOR
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# SISTEMA OPERACIONAL
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# TESTES / COBERTURA
+# =========================
+.coverage
+.coverage.*
+.cache
+pytest_cache/
+nosetests.xml
+coverage.xml
+
 
 /*.pyc
 *.png
@@ -8,4 +79,4 @@
 *.tiff
 *.webp
 
-!videoPlaceholder\placeholder-video.png
+!videoPlaceholder/placeholder-video.png
