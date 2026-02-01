@@ -5,11 +5,16 @@ The beginning (and main study case) of this research is related to the applicati
 
 The current goal achieved here was the segmentation of nurses during medical training in an environment that lacks control over variables that influence Image Processing operations, such as light stability.  
 This software was developed using **Python and OpenCV**, a Computer Vision library whose documentation you can check [here](https://docs.opencv.org/4.x/index.html).
+
+---
+
 ## Sumary:
 + [Academical Work](#academical-work-)
 + [Introduction to Computer Vision and Image Sementation (for Dummies)](#introduction-to-computer-vision-and-image-segmentation-for-dummies-%EF%B8%8F)
++ [Features](#features-%EF%B8%8F)
 + [Software Development](#software-development)
-
+  
+---
 
 ## Academical Work 📖
 
@@ -20,6 +25,7 @@ If you are interested in that part, I invite you to take a look at my academic p
 
 It is available only in Brazilian Portuguese; however, you will find good reference material in English in the final **"Referências"** (_eng: References_) section.
 
+---
 
 ## Introduction to Computer Vision and Image Segmentation (for Dummies ☝️🤓)
 
@@ -45,6 +51,40 @@ Therefore, **Image Processing methods are used to analyze, classify, and manipul
 
 <img width="50%" height="50%" alt="image" src="https://github.com/user-attachments/assets/ed551f19-e74c-4eb0-81f4-8f877583a193" />
 
+---
+
+## Features ✔️
+This section resume the features available in the application
+
+### Image Segmentation Methods
+Segmatation is a process in Image Processing  that aims to separate the zones of interest of an image from the rest
+#### Frame Difference 
+This method consists in subtracting and joining the differences between the current frame with his previous and posterior frames, resulting in images such as the following exemple:
+
+
+<img width="484" height="271" alt="image" src="https://github.com/user-attachments/assets/e53de431-7bbf-475e-b542-373304e997be" />
+
+#### Median Background
+
+This methods creates a model of a background, based on the median of a set of frames in the video, in a scenario that we cant fully see the background in any frame, the effect can look like the following exemple: 
+
+<img width="486" height="270" alt="image" src="https://github.com/user-attachments/assets/62a37f10-9146-45a4-a8b6-6ba50149b66f" />
+
+---
+
+
+
+
+
+### Frame Filtering 
+
+### Frame separation
+
+### Individual folder for each opearation
+
+
+---
+
 ## Software Development
 
 If you are interested in the software architeture, this section is for you, it will describe shortly the main parts of the application, for more diagrams and algorithms, see my paper in the [Academical Work](#academical-work-) section. 
@@ -67,6 +107,14 @@ Each module function can be described as the following:
 + imageProcessing: Utilizes OpenCV to frame processing
 + window: User interface
 + run: Starts the application calling window module
+
+The main flux of the segmentation methods algorithm can be described by the following diagram:
+
+
+<img width="50%" height="50%" alt="Cópia do FluxoSgmentação(ENG) drawio(1)" src="https://github.com/user-attachments/assets/f0affa6e-e88d-48e5-8e60-ca5749af186e" />
+
+
+
 
 
 
