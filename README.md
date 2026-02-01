@@ -142,9 +142,19 @@ The main flow of the segmentation algorithm can be described by the following di
 
 ## Usage 🔬
 
-## Usage 🔬
+---
 
 ⚠️ First, it is extremely important that any video used in the software be captured with a stable, immobilized camera. This is required because all methods are based on motion.
+
+---
+In the software's root path, type in the console:
+
+```
+python run.py
+```
+
+this will open the main application window.
+
 
 This section explains the software use case, following the numbering shown in the image:
 
