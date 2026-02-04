@@ -17,7 +17,7 @@ This software was developed using **Python and OpenCV**, a Computer Vision libra
   
 ---
 
-## Academical Work 📖
+## Academic Work 📖
 
 This README.md document is focused on presenting the application and its features, while also giving a short introduction to the topic for newcomers, rather than going deeper into the theory of the currently applied methods.  
 If you are interested in that part, I invite you to take a look at my academic paper:
