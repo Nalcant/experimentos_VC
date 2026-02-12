@@ -142,41 +142,41 @@ class ImageProcessing:
     and computes the frame difference between consecutive frames.
     It saves the resulting difference images in a new directory called "FrameDiff".
     '''
-    def diff_iterator(self):
+    def diff_iterator(self, step=30):
         preProcess = fm.FileManager.PASTA_PRE_PROCESS
-        framePaths = [f for f in os.listdir(preProcess) if f.endswith(".jpg")] #lista de frames na pasta
-        previousFrame = []
-        currentFrame = []
-        nextFrame = []
-        if(not framePaths):
-            return False, "não há imagens para realizar o frame diff"
-        for i, currentPath in enumerate(framePaths):
-        #ler imagem do frame atual
-            print("Processando: {}".format(os.path.join(preProcess, currentPath)))
-            fullPath = os.path.join(self.frameDir, currentPath)
-            currentFrame = cv2.imread(fullPath)
-        # se não houver frame anterior, atribuir frameAtual ao anterior e seguir para a próxima iteração
-            if  len(previousFrame) == 0:
-                previousFrame = currentFrame
-            else:
-            # se houver posterior, ler posterior
-                #print(type(currentFrame))
-                #print(type(self.frameDir))
-                if i+30 < len(framePaths):
-                    fullPath = os.path.join(preProcess, framePaths[i+30])
-                    print("Lendo próximo frame: {}".format(fullPath))
-                    nextFrame = cv2.imread(fullPath)
-                else:
-                    print("fim do frameDiff no frame: {}".format(fullPath))
-                #print(len(previousFrame))
-                #print(len(currentFrame))
-                #print(len(nextFrame))
-                diffMask = self.frame_diff(previousFrame, currentFrame, nextFrame)
-                threshold_value, diffMask = cv2.threshold(cv2.cvtColor(diffMask, cv2.COLOR_BGR2GRAY), 30, 255, cv2.THRESH_BINARY)
-                caminho = os.path.join(fm.FileManager.PASTA_DIFF, f"diff_{currentPath}")
-                cv2.imwrite(caminho, diffMask)
-                previousFrame = currentFrame
-                print("frame anterior atualizado para o frame atual")
+        framePaths = [f for f in os.listdir(preProcess) if f.endswith(".jpg")]
+
+        if len(framePaths) < step * 2:
+            return False, "não há frames suficientes para aplicar o salto"
+
+        for i in range(step, len(framePaths) - step, step):
+
+            currentPath = framePaths[i]
+
+            print(f"\nProcessando frame base: {currentPath}")
+
+            prevPath = os.path.join(preProcess, framePaths[i - step])
+            currPath = os.path.join(preProcess, framePaths[i])
+            nextPath = os.path.join(preProcess, framePaths[i + step])
+
+            previousFrame = cv2.imread(prevPath)
+            currentFrame  = cv2.imread(currPath)
+            nextFrame     = cv2.imread(nextPath)
+
+            if previousFrame is None or currentFrame is None or nextFrame is None:
+                print("Erro ao carregar algum frame, pulando...")
+                continue
+
+            diffMask = self.frame_diff(previousFrame, currentFrame, nextFrame)
+
+            gray = cv2.cvtColor(diffMask, cv2.COLOR_BGR2GRAY)
+            _, diffMask = cv2.threshold(gray, 30, 255, cv2.THRESH_BINARY)
+
+            caminho = os.path.join(fm.FileManager.PASTA_DIFF, f"diff_{currentPath}")
+            cv2.imwrite(caminho, diffMask)
+
+            print("Máscara salva:", currentPath)
+
         return True, "máscaras de diferença entre frames calculadas com sucesso"
 
     '''
@@ -270,6 +270,18 @@ class ImageProcessing:
             res, mensagem = self.dilate_image(caminho_frame)
             if not res:
                 return res, mensagem
+            
+    def iterar_erosao(self, caminho):
+        print("chamada iterar dilatar")
+        frames = [f for f in os.listdir(caminho) if f.endswith(".jpg")]
+        for frame in frames:
+            caminho_frame = os.path.join(caminho, frame)
+            res, mensagem = self.erode_image(caminho_frame)
+            if not res:
+                return res, mensagem
+    
+
+
         
         mensagem = "iterar dilatação concluída com sucesso!"
         return res, mensagem

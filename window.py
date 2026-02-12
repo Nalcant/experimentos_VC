@@ -240,7 +240,7 @@ class Window():
 
     def call_mascara_mediana(self):
         #primeiro é feito a modelagem do frame mediano
-        self.imageProcessing.median_frame(self.fileMng.PASTA_FRAMES)
+        self.imageProcessing.median_frame(self.fileMng.PASTA_PRE_PROCESS)
         if(not self.frames_extraidos):
             messagebox.showerror("Erro", "Nenhum frame extraído. Extraia frames primeiro.")
             return
@@ -295,7 +295,7 @@ class Window():
         elif(metodo == "Diferença de Frames"):
             folder = self.fileMng.PASTA_DIFF
         
-        resultado, mensagem = self.imageProcessing.iterarar_erosao(folder)
+        resultado, mensagem = self.imageProcessing.iterar_erosao(folder)
         if resultado:
             messagebox.showinfo("Erosão aplicada", mensagem)
         else:
