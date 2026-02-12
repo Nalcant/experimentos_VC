@@ -279,11 +279,7 @@ class ImageProcessing:
             res, mensagem = self.erode_image(caminho_frame)
             if not res:
                 return res, mensagem
-    
-
-
-        
-        mensagem = "iterar dilatação concluída com sucesso!"
+        mensagem = "iterar erosão concluída com sucesso!"
         return res, mensagem
     
     def erode_image(self, img_path, kernel_size=5):
