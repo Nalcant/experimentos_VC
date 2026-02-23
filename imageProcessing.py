@@ -270,6 +270,8 @@ class ImageProcessing:
             res, mensagem = self.dilate_image(caminho_frame)
             if not res:
                 return res, mensagem
+        mensagem = "iterar dilatação concluída com sucesso!"
+        return res, mensagem
             
     def iterar_erosao(self, caminho):
         print("chamada iterar dilatar")
@@ -287,7 +289,7 @@ class ImageProcessing:
         kernel = np.ones((kernel_size, kernel_size), np.uint8)
         eroded_img = cv2.erode(frame, kernel, iterations=1)  
         print("erosao: "+ img_path)
-        cv2.imwrite(img_path, eroded_img) #overites the original image
+        cv2.imwrite(img_path, eroded_img) #overwrites the original image
         return True, "Erosão aplicada com sucesso."
     
     def dilate_image(self, img_path, kernel_size=5):
